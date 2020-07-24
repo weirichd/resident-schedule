@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <title>Resident Schedule</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>OSU Resident Schedule</h1>
+        <p>Current Resident Rotation</p>
+    </div>
+
+    <ul class="nav nav-tabs">
+        {% for group in groups %}
+            {% if loop.first %}
+            <li class="active">
+            {% else %}
+            <li>
+            {% endif %}
+                <a data-toggle="tab" href="#{{ group.pgy}}">PGY {{ group.pgy }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+        {% for group in groups %}
+            {% if loop.first %}
+            <div id="{{ group.pgy}}" class="tab-pane fade in active">
+            {% else %}
+            <div id="{{ group.pgy}}" class="tab-pane fade">
+            {% endif %}
+                <h3>PGY {{ group.pgy }}</h3>
+                {{ group.df | safe }}
+            </div>
+        {% endfor %}
+    </div>
+    {{ df|safe }}
+</div>
+
+</body>
+</html>

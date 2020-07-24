@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import render_template
 
 import sqlalchemy
 
@@ -33,13 +34,18 @@ schedule_data = schedule_data.drop('end_date', axis=1)
 def home():
     global schedule_data
 
-    result = ""
-    for g, df in schedule_data.groupby('PGY'):
-        result += f'<H1>PGY {g}</h1>'
-        result += df.to_html(index=False)
-        result += '\n'
+    def prepare_table(df):
+        return df.drop('PGY', axis=1).to_html(index=False, classes=['table', 'table-striped'])
 
-    return result
+    groups = [
+        {'df': prepare_table(df), 'pgy': g}
+        for g, df in schedule_data.groupby('PGY')
+    ]
+
+    return render_template(
+        'templates.html',
+        groups=groups
+    )
 
 
 if __name__ == "__main__":
