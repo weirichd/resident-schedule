@@ -8,8 +8,6 @@ verify_ssl = true
 [packages]
 flask = "*"
 pandas = "*"
-ipykernel = "*"
-jupyter = "*"
 xlrd = "*"
 sqlalchemy = "*"
 
