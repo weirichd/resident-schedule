@@ -19,7 +19,7 @@ select
     end_date
 from schedule
 where
-DATE('now') between start_date and end_date
+DATE('now') between DATE(start_date) and DATE(end_date)
 """
 
 
@@ -44,4 +44,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host="0.0.0.0")

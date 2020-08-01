@@ -1,0 +1,11 @@
+[run]
+source = app
+
+[report]
+exclude_lines =
+    pramga: no cover
+
+    def __repr__
+
+    if 0:
+    if __name__ == '__main__':
