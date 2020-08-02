@@ -1,7 +1,9 @@
 *.ipynb
 *.xlsx
+*.zip
 
 .idea
 .ipynb_checkpoints
 .mypy_cache
 .coverage
+__pycache__
