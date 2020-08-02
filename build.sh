@@ -7,3 +7,5 @@ if [ $# -eq 0 ]
 fi
 
 docker build -t weirich.david/resident_schedule:$tag .
+
+zip app.zip *
