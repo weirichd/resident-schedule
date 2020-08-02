@@ -2,5 +2,5 @@
 
 !Pipfile
 !Pipfile.lock
-!app/
+!application.py
 !*.db
