@@ -14,7 +14,7 @@
 <div class="container">
     <div class="jumbotron">
         <h1>OSU Resident Schedule</h1>
-        <p>Current Resident Rotation</p>
+        <p>Resident Rotation for {{ selected_date }}</p>
     </div>
 
     <ul class="nav nav-tabs">
@@ -24,7 +24,7 @@
             {% else %}
             <li>
             {% endif %}
-                <a data-toggle="tab" href="#{{ group.pgy}}">PGY {{ group.pgy }}</a>
+                <a data-toggle="tab" href="#{{ group.pgy }}">PGY {{ group.pgy }}</a>
             </li>
         {% endfor %}
     </ul>

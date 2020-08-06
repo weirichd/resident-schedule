@@ -4,6 +4,7 @@ import pandas as pd
 import sqlalchemy
 from flask import Flask
 from flask import render_template
+from flask import request
 
 
 app = Flask(__name__)
@@ -51,11 +52,15 @@ def home():
         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
     ]
 
-    return render_template("templates.html", groups=groups)
+    return render_template("home.html", groups=groups)
 
 
-@app.route("/date/<year>/<month>/<day>/", methods=["GET"])
-def date_page(year=2021, month=1, day=1):
+@app.route("/date/", methods=["GET"])
+def date_page():
+    year = request.args.get("year", type=int)
+    month = request.args.get("month", type=int)
+    day = request.args.get("day", type=int)
+
     date = f"{int(year)}-{int(month):02}-{int(day):02}"
 
     schedule_data = get_data_from_date(date)
@@ -64,7 +69,7 @@ def date_page(year=2021, month=1, day=1):
         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
     ]
 
-    return render_template("templates.html", groups=groups)
+    return render_template("date.html", groups=groups, selected_date=date)
 
 
 if __name__ == "__main__":
