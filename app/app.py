@@ -57,11 +57,7 @@ def home():
 
 @app.route("/date/", methods=["GET"])
 def date_page():
-    year = request.args.get("year", type=int)
-    month = request.args.get("month", type=int)
-    day = request.args.get("day", type=int)
-
-    date = f"{int(year)}-{int(month):02}-{int(day):02}"
+    date = request.args.get("date", type=str)
 
     schedule_data = get_data_from_date(date)
 
@@ -70,6 +66,12 @@ def date_page():
     ]
 
     return render_template("date.html", groups=groups, selected_date=date)
+
+
+@app.route("/date_picker/", methods=["GET"])
+def date_picker():
+
+    return render_template("date_picker.html")
 
 
 if __name__ == "__main__":
