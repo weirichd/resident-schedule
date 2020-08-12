@@ -29,8 +29,9 @@ WORKDIR /home/appuser
 USER appuser
 
 COPY . .
+RUN sed "s/app.run(debug=True/app.run(debug=False/" app/app.py > app_no_debug.py
 
 EXPOSE 8000
 ENTRYPOINT [ "python" ]
 
-CMD [ "app/app.py" ]
+CMD [ "app_no_debug.py" ]
