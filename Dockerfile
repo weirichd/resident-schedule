@@ -26,12 +26,13 @@ ENV PATH "/.venv/bin:$PATH"
 
 RUN useradd --create-home appuser
 WORKDIR /home/appuser
-USER appuser
 
 COPY . .
-RUN sed "s/app.run(debug=True/app.run(debug=False/" app/app.py > app_no_debug.py
+RUN sed -i "s/debug=True/debug=False/" app/app.py
+
+USER appuser
 
 EXPOSE 8000
 ENTRYPOINT [ "python" ]
 
-CMD [ "app_no_debug.py" ]
+CMD [ "app/app.py" ]
