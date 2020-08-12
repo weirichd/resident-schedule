@@ -74,14 +74,14 @@ dates_dataframe_for_fellows.columns = ["start_date", "end_date"]
 # Build up the database row by row.
 result = pd.DataFrame(columns=["name", "PGY", "rotation", "start_date", "end_date"])
 
+dates_index = sheet.iloc[0].values
 for i, row in sheet.iterrows():
-    dates_row_num = 0
     if row[1] == "Dates":
-        dates_row_num = i
+        dates_index = sheet.iloc[i].values
     elif str(row[0]) == "nan":  # One of the blank rows
         continue
     else:
-        resident = pd.Series(data=row.values, index=sheet.iloc[dates_row_num].values)
+        resident = pd.Series(data=row.values, index=dates_index)
         name = resident.iloc[1]
         pgy = resident.iloc[0]
         rotation = resident.iloc[2:].dropna()
@@ -101,7 +101,6 @@ for i, row in sheet.iterrows():
         this_residents_rows["name"] = name
 
         result = pd.concat([result, this_residents_rows], axis=0)
-
 
 # Fix the date times
 result = result.reset_index(drop=True)

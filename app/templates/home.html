@@ -14,10 +14,13 @@
 <div class="container">
     <div class="jumbotron">
         <h1>OSU Resident Schedule</h1>
-        <p>Current Resident Rotation For Today</p>
+        <p>{{ header_text }}</p>
     </div>
 
-    <p><a href="/date_picker/" class="btn btn-primary" role="button">Select a specific date</a></p>
+    <p>
+        <a href="/date_picker/" class="btn btn-primary" role="button">Select a specific date</a>
+        <a href="/rotation_picker/" class="btn btn-primary" role="button">View full  schedule for rotation</a>
+    </p>
 
     <ul class="nav nav-tabs">
         {% for group in groups %}
