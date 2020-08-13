@@ -47,6 +47,24 @@ def get_rotation_schedule(rotation: str) -> pd.DataFrame:
     from schedule
     where
     Rotation='{rotation}'
+    order by start_date;
+    """
+
+    return pd.read_sql(
+        con=get_connection(), sql=query, parse_dates=["start_date", "end_date"]
+    )
+
+
+def get_resident_schedule(name: str) -> pd.DataFrame:
+    query = f"""
+    select
+        PGY,
+        Name,
+        start_date,
+        end_date
+    from schedule
+    where name = '{name}'
+    order by name, start_date
     """
 
     return pd.read_sql(
@@ -120,6 +138,21 @@ def rotation_schedule():
 
     return render_template(
         "home.html", groups=groups, header_text=f"Schedule for Rotation: {rotation}"
+    )
+
+
+@app.route("/resident/", methods=["GET"])
+def resident_schedule():
+    name = request.args.get("name", type=str)
+
+    schedule_data = get_resident_schedule(name)
+
+    groups = [
+        {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
+    ]
+
+    return render_template(
+        "home.html", groups=groups, header_text=f"Full Schedule for {name}"
     )
 
 
