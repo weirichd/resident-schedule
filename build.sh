@@ -11,4 +11,4 @@ echo -e "\e[1m\e[34mBuilding Docker Image... \e[0m"
 docker build -t weirich.david/resident_schedule:$tag .
 
 echo -e "\e[1m\e[34mCreating ZIP Archive... \e[0m"
-rm app.zip && zip -r app.zip *
+rm -f app.zip && zip -r app.zip *
