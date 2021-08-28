@@ -59,7 +59,7 @@ def get_resident_schedule(name: str) -> pd.DataFrame:
     query = f"""
     select
         PGY,
-        Name,
+        rotation,
         start_date,
         end_date
     from schedule
@@ -163,6 +163,15 @@ def rotation_picker():
     return render_template(
         "rotation_picker.html", rotations=rotation_list["rotation"].to_list()
     )
+
+@app.route("/resident_picker/", methods=["GET"])
+def resident_picker():
+    resident_list = get_all_resident_names()
+
+    return render_template(
+        "resident_picker.html", names=resident_list["name"].to_list()
+    )
+
 
 
 if __name__ == "__main__":
