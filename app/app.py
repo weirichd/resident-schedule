@@ -64,7 +64,7 @@ def get_resident_schedule(name: str) -> pd.DataFrame:
         end_date
     from schedule
     where name = '{name}'
-    order by name, start_date
+    order by start_date
     """
 
     return pd.read_sql(
