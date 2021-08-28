@@ -23,31 +23,36 @@
         <a href="/resident_picker/" class="btn btn-primary" role="button">View schedule for a specific person</a>
     </p>
 
-    <ul class="nav nav-tabs">
-        {% for group in groups %}
-            {% if loop.first %}
-            <li class="active">
-            {% else %}
-            <li>
-            {% endif %}
-                <a data-toggle="tab" href="#{{ group.pgy}}">PGY {{ group.pgy }}</a>
-            </li>
-        {% endfor %}
-    </ul>
+    {% if groups|length > 1 %}
+        <ul class="nav nav-tabs">
+            {% for group in groups %}
+                {% if loop.first %}
+                <li class="active">
+                {% else %}
+                <li>
+                {% endif %}
+                    <a data-toggle="tab" href="#{{ group.pgy}}">PGY {{ group.pgy }}</a>
+                </li>
+            {% endfor %}
+        </ul>
 
-    <div class="tab-content">
-        {% for group in groups %}
-            {% if loop.first %}
-            <div id="{{ group.pgy}}" class="tab-pane fade in active">
-            {% else %}
-            <div id="{{ group.pgy}}" class="tab-pane fade">
-            {% endif %}
-                <h3>PGY {{ group.pgy }}</h3>
-                {{ group.df | safe }}
-            </div>
-        {% endfor %}
-    </div>
-    {{ df|safe }}
+        <div class="tab-content">
+            {% for group in groups %}
+                {% if loop.first %}
+                <div id="{{ group.pgy}}" class="tab-pane fade in active">
+                {% else %}
+                <div id="{{ group.pgy}}" class="tab-pane fade">
+                {% endif %}
+                    <h3>PGY {{ group.pgy }}</h3>
+                    {{ group.df | safe }}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+
+    {{ groups[0].df | safe }}
+
+    {% endif %}
 
     <p>
     Note that vacations are not indicated in this page.
