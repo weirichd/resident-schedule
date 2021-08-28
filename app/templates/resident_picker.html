@@ -24,9 +24,40 @@
           Pick a name
       <span class="caret"></span></button>
       <ul class="dropdown-menu">
-          {% for name in names %}
+
+          <li class="disabled"><a href="#">PGY 1</a></li>
+          {% for name in names.pgy1 %}
           <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
           {% endfor %}
+
+          <li class="divider"></li>
+
+          <li class="disabled"><a href="#">PGY 2</a></li>
+          {% for name in names.pgy2 %}
+          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% endfor %}
+
+          <li class="divider"></li>
+
+          <li class="disabled"><a href="#">PGY 3</a></li>
+          {% for name in names.pgy3 %}
+          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% endfor %}
+
+          <li class="divider"></li>
+
+          <li class="disabled"><a href="#">PGY 4</a></li>
+          {% for name in names.pgy4 %}
+          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% endfor %}
+
+          <li class="divider"></li>
+
+          <li class="disabled"><a href="#">PGY 5</a></li>
+          {% for name in names.pgy5 %}
+          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% endfor %}
+
       </ul>
     </div>
 

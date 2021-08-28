@@ -79,7 +79,7 @@ def get_all_rotation_names() -> pd.DataFrame:
 
 def get_all_resident_names() -> pd.DataFrame:
     query = "select PGY, name from schedule group by 1, 2;"
-    return pd.read_sql(con=get_connection(), sql=query).sort_values('name')
+    return pd.read_sql(con=get_connection(), sql=query).sort_values("name")
 
 
 def prepare_table(df):
@@ -164,14 +164,17 @@ def rotation_picker():
         "rotation_picker.html", rotations=rotation_list["rotation"].to_list()
     )
 
+
 @app.route("/resident_picker/", methods=["GET"])
 def resident_picker():
     resident_list = get_all_resident_names()
 
-    return render_template(
-        "resident_picker.html", names=resident_list["name"].to_list()
-    )
+    names = {
+        f"pgy{pgy}": resident_list[resident_list["PGY"] == str(pgy)]["name"].to_list()
+        for pgy in range(1, 6)
+    }
 
+    return render_template("resident_picker.html", names=names)
 
 
 if __name__ == "__main__":
