@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "resident-schedule"
+version = "1.0.0"
+description = "OUS Resident schedule web app"
+authors = ["David E. Weirich <weirich.david@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "^2.1.3"
+pandas = "^1.4.3"
+xlrd = "^2.0.1"
+SQLAlchemy = "^1.4.39"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+black = "^22.6.0"
+flake8 = "^4.0.1"
+mypy = "^0.971"
+pytest-cov = "^3.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
