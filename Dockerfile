@@ -1,4 +1,4 @@
-FROM python:3.7-slim as base
+FROM python:3.10-slim as base
 
 MAINTAINER David E. Weirich "weirich.david@gmail.com"
 
@@ -8,17 +8,21 @@ ENV PYTHONDOCKWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
 
+# Install the virtual env
 FROM base AS python-deps
 
-RUN pip install pipenv
+RUN pip install poetry
+RUN poetry config virtualenvs.in-project true
+
 RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
-COPY Pipfile .
-COPY Pipfile.lock .
+COPY pyproject.toml .
+COPY poetry.lock .
 
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+RUN poetry install --no-dev
 
 
+# Make the app user
 FROM base AS runtime
 
 COPY --from=python-deps /.venv /.venv

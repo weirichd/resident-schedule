@@ -1,0 +1,53 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/david/workspace/resident-schedule/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+AWSEBDockerrunVersion	Dockerrun.aws.json	/^    "AWSEBDockerrunVersion": "1",$/;"	s
+Image	Dockerrun.aws.json	/^    "Image": {$/;"	o
+Logging	Dockerrun.aws.json	/^    "Logging": "\/tmp\/sample-app"$/;"	s
+OSU Resident Schedule	app/templates/date_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
+OSU Resident Schedule	app/templates/home.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
+OSU Resident Schedule	app/templates/resident_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
+OSU Resident Schedule	app/templates/rotation_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
+OSU Residents Schedule App	README.md	/^# OSU Residents Schedule App$/;"	c
+PGY {{ group.pgy }}	app/templates/home.html	/^                    <h3>PGY {{ group.pgy }}<\/h3>$/;"	j
+Update	Dockerrun.aws.json	/^        "Update": "false"$/;"	s	object:Image
+app	app/app.py	/^app = Flask(__name__)$/;"	v
+args	read_database_from_excel.py	/^    args = parser.parse_args()$/;"	v
+clean_rotation_name	read_database_from_excel.py	/^def clean_rotation_name(name):$/;"	f
+conn	read_database_from_excel.py	/^    conn = sqlalchemy.create_engine(f"sqlite:\/\/\/{output}", echo=False)$/;"	v
+date	app/templates/date_picker.html	/^                        <input class="form-control" id="date" name="date" placeholder="YYYY-MM-D/;"	I
+date_page	app/app.py	/^def date_page():$/;"	f
+date_picker	app/app.py	/^def date_picker():$/;"	f
+file_path	read_database_from_excel.py	/^    file_path = args.file$/;"	v
+get_all_resident_names	app/app.py	/^def get_all_resident_names() -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+get_all_rotation_names	app/app.py	/^def get_all_rotation_names() -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+get_connection	app/app.py	/^def get_connection():$/;"	f
+get_data_from_date	app/app.py	/^def get_data_from_date(date: Optional[str] = None) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+get_resident_schedule	app/app.py	/^def get_resident_schedule(name: str) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+get_rotation_schedule	app/app.py	/^def get_rotation_schedule(rotation: str) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+handle_resident_row	read_database_from_excel.py	/^def handle_resident_row(row: pd.Series) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+home	app/app.py	/^def home():$/;"	f
+np	read_database_from_excel.py	/^import numpy as np$/;"	I	nameref:module:numpy
+output	read_database_from_excel.py	/^    output = args.output$/;"	v
+parser	read_database_from_excel.py	/^    parser = argparse.ArgumentParser($/;"	v
+pd	app/app.py	/^import pandas as pd$/;"	I	nameref:module:pandas
+pd	read_database_from_excel.py	/^import pandas as pd$/;"	I	nameref:module:pandas
+prepare_table	app/app.py	/^def prepare_table(df):$/;"	f
+resident_picker	app/app.py	/^def resident_picker():$/;"	f
+resident_schedule	app/app.py	/^def resident_schedule():$/;"	f
+result	read_database_from_excel.py	/^        result = result.append(handle_resident_row(row))$/;"	v
+result	read_database_from_excel.py	/^    result = pd.DataFrame(columns=["name", "PGY", "rotation", "start_date", "end_date"])$/;"	v
+rotation_picker	app/app.py	/^def rotation_picker():$/;"	f
+rotation_schedule	app/app.py	/^def rotation_schedule():$/;"	f
+sheet	read_database_from_excel.py	/^    sheet = pd.read_csv(file_path)$/;"	v
+test_app	test/test_app.py	/^def test_app():$/;"	f
+{{ group.pgy}}	app/templates/home.html	/^                <div id="{{ group.pgy}}" class="tab-pane fade in active">$/;"	I
+{{ group.pgy}}	app/templates/home.html	/^                <div id="{{ group.pgy}}" class="tab-pane fade">$/;"	I
