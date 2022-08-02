@@ -23,7 +23,20 @@
         <a href="/resident_picker/" class="btn btn-primary" role="button">View schedule for a specific person</a>
     </p>
 
-    {% if groups|length > 1 %}
+    {% if groups|length == 0 %}
+
+        <div class="alert alert-danger">
+        No data was found. 
+        This is most likely due to the schedule being out of date.
+        If it is still early in the school year, hang tight, David will eventually get around to
+        updating it.
+        </div>
+
+    {% elif groups|length == 1 %}
+
+        {{ groups[0].df | safe }}
+
+    {% else %}
         <ul class="nav nav-tabs">
             {% for group in groups %}
                 {% if loop.first %}
@@ -48,10 +61,6 @@
                 </div>
             {% endfor %}
         </div>
-    {% else %}
-
-    {{ groups[0].df | safe }}
-
     {% endif %}
 
     <div class="alert alert-warning">
