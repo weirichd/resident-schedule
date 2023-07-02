@@ -11,6 +11,7 @@ pandas = "^1.4.3"
 xlrd = "^2.0.1"
 SQLAlchemy = "^1.4.39"
 openpyxl = "^3.0.10"
+pyxlsb = "^1.0.10"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
