@@ -2,12 +2,15 @@ from typing import Optional
 
 import pandas as pd
 import sqlalchemy
-from flask import Flask
-from flask import render_template
-from flask import request
+
+from fastapi import FastAPI, Request, APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 
-app = Flask(__name__)
+app = FastAPI()
+router = APIRouter()
+templates = Jinja2Templates(directory='app/templates')
 
 
 def get_connection():
@@ -93,89 +96,92 @@ def prepare_table(df):
     return result.to_html(index=False, classes=["table", "table-striped"])
 
 
-@app.route("/", methods=["GET"])
-def home():
+@router.get("/", response_class=HTMLResponse)
+async def home(request: Request):
     schedule_data = get_data_from_date()
 
     groups = [
         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
     ]
 
-    return render_template(
-        "home.html", groups=groups, header_text="Current Schedule for Today"
-    )
+    return templates.TemplateResponse("home.html", {"request": request, "groups": groups, "header_text": "Current Schedule for Today"})
 
 
-@app.route("/date/", methods=["GET"])
-def date_page():
-    date = request.args.get("date", type=str)
-
-    schedule_data = get_data_from_date(date)
-
-    groups = [
-        {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
-    ]
-
-    return render_template(
-        "home.html", groups=groups, header_text=f"Schedule for Date: {date}"
-    )
+app.include_router(router)
 
 
-@app.route("/date_picker/", methods=["GET"])
-def date_picker():
-    return render_template("date_picker.html")
-
-
-@app.route("/rotation/", methods=["GET"])
-def rotation_schedule():
-    rotation = request.args.get("rotation", type=str)
-
-    schedule_data = get_rotation_schedule(rotation)
-
-    groups = [
-        {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
-    ]
-
-    return render_template(
-        "home.html", groups=groups, header_text=f"Schedule for Rotation: {rotation}"
-    )
-
-
-@app.route("/resident/", methods=["GET"])
-def resident_schedule():
-    name = request.args.get("name", type=str)
-
-    schedule_data = get_resident_schedule(name)
-
-    groups = [
-        {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
-    ]
-
-    return render_template(
-        "home.html", groups=groups, header_text=f"Full Schedule for {name}"
-    )
-
-
-@app.route("/rotation_picker/", methods=["GET"])
-def rotation_picker():
-    rotation_list = get_all_rotation_names()
-
-    return render_template(
-        "rotation_picker.html", rotations=rotation_list["rotation"].to_list()
-    )
-
-
-@app.route("/resident_picker/", methods=["GET"])
-def resident_picker():
-    resident_list = get_all_resident_names()
-
-    names = {
-        f"pgy{pgy}": resident_list[resident_list["PGY"] == str(pgy)]["name"].to_list()
-        for pgy in range(1, 6)
-    }
-
-    return render_template("resident_picker.html", names=names)
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=8000, host="0.0.0.0")
+# 
+# @app.route("/date/", methods=["GET"])
+# def date_page():
+#     date = request.args.get("date", type=str)
+# 
+#     schedule_data = get_data_from_date(date)
+# 
+#     groups = [
+#         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
+#     ]
+# 
+#     return render_template(
+#         "home.html", groups=groups, header_text=f"Schedule for Date: {date}"
+#     )
+# 
+# 
+# @app.route("/date_picker/", methods=["GET"])
+# def date_picker():
+#     return render_template("date_picker.html")
+# 
+# 
+# @app.route("/rotation/", methods=["GET"])
+# def rotation_schedule():
+#     rotation = request.args.get("rotation", type=str)
+# 
+#     schedule_data = get_rotation_schedule(rotation)
+# 
+#     groups = [
+#         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
+#     ]
+# 
+#     return render_template(
+#         "home.html", groups=groups, header_text=f"Schedule for Rotation: {rotation}"
+#     )
+# 
+# 
+# @app.route("/resident/", methods=["GET"])
+# def resident_schedule():
+#     name = request.args.get("name", type=str)
+# 
+#     schedule_data = get_resident_schedule(name)
+# 
+#     groups = [
+#         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
+#     ]
+# 
+#     return render_template(
+#         "home.html", groups=groups, header_text=f"Full Schedule for {name}"
+#     )
+# 
+# 
+# @app.route("/rotation_picker/", methods=["GET"])
+# def rotation_picker():
+#     rotation_list = get_all_rotation_names()
+# 
+#     return render_template(
+#         "rotation_picker.html", rotations=rotation_list["rotation"].to_list()
+#     )
+# 
+# 
+# @app.route("/resident_picker/", methods=["GET"])
+# def resident_picker():
+#     resident_list = get_all_resident_names()
+# 
+#     names = {
+#         f"pgy{pgy}": resident_list[resident_list["PGY"] == str(pgy)]["name"].to_list()
+#         for pgy in range(1, 6)
+#     }
+# 
+#     return render_template("resident_picker.html", names=names)
+# 
+# 
+# 
+# 
+# 
