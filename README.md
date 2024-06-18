@@ -13,5 +13,8 @@ A small app I made to help keep track of the OSU Hospital resident schedule.
 
 ## TODO List
 
-[ ] Add Github actions to automatically deploy to AWS when pushsed
-[ ] Make it easier to manipulate the database
+* Add Github actions to automatically deploy to AWS when pushsed
+* Make it easier to manipulate the database
+* Add pre-commit checks
+* Move build command into Makefile
+
