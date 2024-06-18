@@ -3,13 +3,12 @@ from typing import Optional
 import pandas as pd
 import sqlalchemy
 
-from fastapi import FastAPI, Request, APIRouter, HTTPException
+from fastapi import FastAPI, Request, APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 
 app = FastAPI()
-router = APIRouter()
 templates = Jinja2Templates(directory='app/templates')
 
 
@@ -96,7 +95,7 @@ def prepare_table(df):
     return result.to_html(index=False, classes=["table", "table-striped"])
 
 
-@router.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     schedule_data = get_data_from_date()
 
@@ -107,29 +106,22 @@ async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request, "groups": groups, "header_text": "Current Schedule for Today"})
 
 
-app.include_router(router)
+@app.get("/date/", response_class=HTMLResponse)
+async def date_page(request: Request, date: str = Query(..., description="Date parameter")):
+    schedule_data = get_data_from_date(date)
+    
+    groups = [
+        {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
+    ]
+    
+    return templates.TemplateResponse("home.html", {"request": request, "groups": groups, "header_text": f"Schedule for Date: {date}"})
 
 
-# 
-# @app.route("/date/", methods=["GET"])
-# def date_page():
-#     date = request.args.get("date", type=str)
-# 
-#     schedule_data = get_data_from_date(date)
-# 
-#     groups = [
-#         {"df": prepare_table(df), "pgy": g} for g, df in schedule_data.groupby("PGY")
-#     ]
-# 
-#     return render_template(
-#         "home.html", groups=groups, header_text=f"Schedule for Date: {date}"
-#     )
-# 
-# 
-# @app.route("/date_picker/", methods=["GET"])
-# def date_picker():
-#     return render_template("date_picker.html")
-# 
+
+@app.get("/date_picker/", response_class=HTMLResponse)
+def date_picker(request: Request):
+    return templates.TemplateResponse("date_picker.html", {"request": request})
+
 # 
 # @app.route("/rotation/", methods=["GET"])
 # def rotation_schedule():
