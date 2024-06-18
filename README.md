@@ -10,3 +10,8 @@ A small app I made to help keep track of the OSU Hospital resident schedule.
 
 * Run the parse script
 
+
+## TODO List
+
+[ ] Add Github actions to automatically deploy to AWS when pushsed
+[ ] Make it easier to manipulate the database
