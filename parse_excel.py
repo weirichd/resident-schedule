@@ -41,7 +41,7 @@ def handle_resident_row(row: pd.Series, dates: pd.DataFrame):
     result['name'] = row.iloc[1].strip()
     result['PGY'] = str(row.iloc[0])
     rotation = row.iloc[2:].reset_index(drop=True)
-    rotation = rotation[:dates.shape[0]]
+    rotation = rotation[:dates.shape[0]].strip()
     result['rotation'] = rotation
     result = result.dropna()
 
