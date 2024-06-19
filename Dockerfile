@@ -37,6 +37,6 @@ RUN sed -i "s/debug=True/debug=False/" app/app.py
 USER appuser
 
 EXPOSE 8000
-ENTRYPOINT [ "python" ]
+ENTRYPOINT [ "uvicorn" ]
 
-CMD [ "app/app.py" ]
+CMD [ "app.app:app", "--host", "0.0.0.0", "--port", "8000" ]
