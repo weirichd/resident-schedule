@@ -9,26 +9,23 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	5.9.0	//
-AWSEBDockerrunVersion	Dockerrun.aws.json	/^    "AWSEBDockerrunVersion": "1",$/;"	s
 Directions	README.md	/^## Directions $/;"	s	chapter:OSU Residents Schedule App
-Image	Dockerrun.aws.json	/^    "Image": {$/;"	o
-Logging	Dockerrun.aws.json	/^    "Logging": "\/tmp\/sample-app"$/;"	s
 OSU Resident Schedule	app/templates/date_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
 OSU Resident Schedule	app/templates/home.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
 OSU Resident Schedule	app/templates/resident_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
 OSU Resident Schedule	app/templates/rotation_picker.html	/^        <h1>OSU Resident Schedule<\/h1>$/;"	h
 OSU Residents Schedule App	README.md	/^# OSU Residents Schedule App$/;"	c
 PGY {{ group.pgy }}	app/templates/home.html	/^                    <h3>PGY {{ group.pgy }}<\/h3>$/;"	j
-Update	Dockerrun.aws.json	/^        "Update": "false"$/;"	s	object:Image
+TODO List	README.md	/^## TODO List$/;"	s	chapter:OSU Residents Schedule App
 action	parse_excel.py	/^        action = input("(s)kip, (d)ate, (r)esident, (q)uit: ")$/;"	v
-app	app/app.py	/^app = Flask(__name__)$/;"	v
+app	app/app.py	/^app = FastAPI()$/;"	v
 args	parse_excel.py	/^    args = parser.parse_args()$/;"	v
 conn	parse_excel.py	/^    conn = sqlalchemy.create_engine(f"sqlite:\/\/\/{output}", echo=False)$/;"	v
 current_date_data	parse_excel.py	/^            current_date_data = handle_date_row(row, year)$/;"	v
 current_date_data	parse_excel.py	/^    current_date_data = None$/;"	v
 date	app/templates/date_picker.html	/^                        <input class="form-control" id="date" name="date" placeholder="YYYY-MM-D/;"	I
-date_page	app/app.py	/^def date_page():$/;"	f
-date_picker	app/app.py	/^def date_picker():$/;"	f
+date_page	app/app.py	/^async def date_page($/;"	f
+date_picker	app/app.py	/^def date_picker(request: Request):$/;"	f
 df	parse_excel.py	/^    df = pd.read_excel(file_path)$/;"	v
 file_path	parse_excel.py	/^    file_path = args.file$/;"	v
 final_table_list	parse_excel.py	/^    final_table_list = []$/;"	v
@@ -40,7 +37,7 @@ get_resident_schedule	app/app.py	/^def get_resident_schedule(name: str) -> pd.Da
 get_rotation_schedule	app/app.py	/^def get_rotation_schedule(rotation: str) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
 handle_date_row	parse_excel.py	/^def handle_date_row(row: pd.Series, year: int) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
 handle_resident_row	parse_excel.py	/^def handle_resident_row(row: pd.Series, dates: pd.DataFrame):$/;"	f
-home	app/app.py	/^def home():$/;"	f
+home	app/app.py	/^async def home(request: Request):$/;"	f
 output	parse_excel.py	/^    output = args.output$/;"	v
 parse_date	parse_excel.py	/^def parse_date(s: str, year: int) -> pd.Timestamp:$/;"	f	typeref:typename:pd.Timestamp
 parse_date_range	parse_excel.py	/^def parse_date_range(s: str, year: int) -> Tuple[pd.Timestamp, pd.Timestamp]:$/;"	f	typeref:typename:Tuple[pd.Timestamp,pd.Timestamp]
@@ -49,11 +46,12 @@ pd	app/app.py	/^import pandas as pd$/;"	I	nameref:module:pandas
 pd	parse_excel.py	/^import pandas as pd$/;"	I	nameref:module:pandas
 prepare_table	app/app.py	/^def prepare_table(df):$/;"	f
 resident_data	parse_excel.py	/^            resident_data = handle_resident_row(row, current_date_data)$/;"	v
-resident_picker	app/app.py	/^def resident_picker():$/;"	f
-resident_schedule	app/app.py	/^def resident_schedule():$/;"	f
+resident_picker	app/app.py	/^def resident_picker(request: Request):$/;"	f
+resident_schedule	app/app.py	/^def resident_schedule(request: Request, name: str = Query(..., description="Name parameter")):$/;"	f
 result	parse_excel.py	/^    result = pd.concat(final_table_list)$/;"	v
-rotation_picker	app/app.py	/^def rotation_picker():$/;"	f
-rotation_schedule	app/app.py	/^def rotation_schedule():$/;"	f
+rotation_picker	app/app.py	/^def rotation_picker(request: Request):$/;"	f
+rotation_schedule	app/app.py	/^def rotation_schedule($/;"	f
+templates	app/app.py	/^templates = Jinja2Templates(directory="app\/templates")$/;"	v
 test_app	test/test_app.py	/^def test_app():$/;"	f
 year	parse_excel.py	/^        year = pd.Timestamp.today().year$/;"	v
 year	parse_excel.py	/^    year = args.year$/;"	v
