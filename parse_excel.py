@@ -26,7 +26,7 @@ def handle_date_row(row: pd.Series, year: int) -> pd.DataFrame:
     Read in a row of the table and parse it as a date row.
     """
     
-    row = row.iloc[2:].dropna()
+    row = row.iloc[3:].dropna()
     dates = row.apply(lambda x: parse_date_range(x, year)).tolist()
     
     result = pd.DataFrame(dates)
@@ -38,12 +38,13 @@ def handle_date_row(row: pd.Series, year: int) -> pd.DataFrame:
 
 def handle_resident_row(row: pd.Series, dates: pd.DataFrame):
     result = dates.copy()
-    result['name'] = row.iloc[1].strip()
-    result['PGY'] = str(row.iloc[0])
-    rotation = row.iloc[2:].reset_index(drop=True)
+    result['name'] = row.iloc[2].strip()
+    result['PGY'] = str(row.iloc[1])
+    rotation = row.iloc[3:].reset_index(drop=True)
     rotation = rotation[:dates.shape[0]]
     result['rotation'] = rotation
     result = result.dropna()
+    result['rotation'] = result['rotation'].apply(lambda x: x.strip())
 
     return result
 
@@ -85,38 +86,40 @@ if __name__ == "__main__":
     # We iterate over the file and parse each line one at a time
     current_date_data = None
     for _, row in df.iterrows():
-        print('-' * 20)
-        print("Handle row:")
-        print()
-        print(row)
-
-        print()
-        action = input("(s)kip, (d)ate, (r)esident, (q)uit: ")
+        action = row.iloc[0]
 
         if action == "d":
-            print("Parseing as a date row")
             current_date_data = handle_date_row(row, year)
-            
-            print('Updating current date data:')
-            print(current_date_data)
-
         elif action == "r":
-            print("Parsing as a resident row")
             resident_data = handle_resident_row(row, current_date_data)
-            print('Parsed data:')
-            print(resident_data)
             final_table_list.append(resident_data)
 
         elif action == 'q':
-            print('Bye!')
             exit()
-        else:
-            print("Skipping row")
 
     print('Finished!')
+    result = pd.concat(final_table_list)
+
+    print("SANITY CHECK")
+
+    print()
+
+    print('=' * 20)
+    print()
+    print("PGYs found:")
+    print()
+    print(result['PGY'].value_counts())
+
+    print('=' * 20)
+    print()
+    print("Rotations found:")
+    print()
+    print(result['rotation'].value_counts().sort_index())
+
+    print('=' * 20)
+    print()
     print('Outputting database')
 
-    result = pd.concat(final_table_list)
 
     conn = sqlalchemy.create_engine(f"sqlite:///{output}", echo=False)
     result.to_sql("schedule", conn, if_exists="replace", index=False)

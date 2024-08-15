@@ -17,7 +17,7 @@ OSU Resident Schedule	app/templates/rotation_picker.html	/^        <h1>OSU Resid
 OSU Residents Schedule App	README.md	/^# OSU Residents Schedule App$/;"	c
 PGY {{ group.pgy }}	app/templates/home.html	/^                    <h3>PGY {{ group.pgy }}<\/h3>$/;"	j
 TODO List	README.md	/^## TODO List$/;"	s	chapter:OSU Residents Schedule App
-action	parse_excel.py	/^        action = input("(s)kip, (d)ate, (r)esident, (q)uit: ")$/;"	v
+action	parse_excel.py	/^        action = row.iloc[0]$/;"	v
 app	app/app.py	/^app = FastAPI()$/;"	v
 args	parse_excel.py	/^    args = parser.parse_args()$/;"	v
 conn	parse_excel.py	/^    conn = sqlalchemy.create_engine(f"sqlite:\/\/\/{output}", echo=False)$/;"	v
