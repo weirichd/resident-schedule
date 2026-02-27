@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 COPY pyproject.toml .
 COPY poetry.lock .
 
-RUN poetry install --without dev
+RUN poetry install --without dev --no-root
 
 
 # Make the app user
