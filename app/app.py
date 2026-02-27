@@ -86,6 +86,7 @@ def get_all_rotation_names() -> list[dict]:
                 Schedule.rotation,
                 Schedule.rotation_full,
             )
+            .filter(Schedule.rotation != "VACATION")
             .group_by(Schedule.rotation, Schedule.rotation_full)
             .all()
         )

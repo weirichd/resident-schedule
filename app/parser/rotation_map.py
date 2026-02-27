@@ -48,9 +48,34 @@ ROTATION_ABBREVS: dict[str, str] = {
     "ENT": "ENT",
     "Foregut": "Foregut Surgery",
     "Plastics": "Plastic Surgery",
+    "PLASTICS": "Plastic Surgery",
     "Hernia": "Hernia Surgery",
     "Crit Care": "Critical Care",
     "Global": "Global Surgery",
+    "UROLOGY": "Urology",
+    "Urology": "Urology",
+    "ORTHO": "Orthopedics",
+    "Ortho": "Orthopedics",
+    "ORTHO-AWAY": "Orthopedics (Away)",
+    "NSGY": "Neurosurgery",
+    "IR": "Interventional Radiology",
+    "PROCEDURE": "Procedure",
+    "Procedure": "Procedure",
+    "CVICU": "Cardiovascular ICU",
+    "CT Surgery": "CT Surgery",
+    "CT Anesthesia": "CT Anesthesia",
+    "CT - ICU": "CT ICU",
+    "CT-ICU": "CT ICU",
+    "Endoscopy CRC": "Endoscopy",
+    "General": "General Surgery",
+    "General Surgery": "General Surgery",
+    "SONC - HPB": "Surgical Oncology / HPB",
+    "SONC-HPB": "Surgical Oncology / HPB",
+    "SONC/HPB": "Surgical Oncology / HPB",
+    "SONC-Breast": "Surgical Oncology - Breast",
+    "SONC-Mel/Sarc": "Surgical Oncology - Melanoma/Sarcoma",
+    "VASCULAR": "Vascular Surgery",
+    "Cardiac/CVICU": "Cardiac Surgery / Cardiovascular ICU",
     "VACATION": "Vacation",
     "Vacation / Coverage": "Vacation / Coverage",
 }
@@ -58,6 +83,10 @@ ROTATION_ABBREVS: dict[str, str] = {
 # Compound rotation names that should NOT be split on "/"
 COMPOUND_ROTATIONS: set[str] = {
     "SONC/HPB",
+    "SONC-HPB",
+    "SONC - HPB",
+    "SONC-Breast",
+    "SONC-Mel/Sarc",
     "Mel Sarc / Endo",
     "Mel Sarc/Endo",
     "Vacation / Coverage",
@@ -71,6 +100,9 @@ COMPOUND_ROTATIONS: set[str] = {
     "Peds Surg",
     "MC East",
     "East GS",
+    "Cardiac/CVICU",
+    "CT - ICU",
+    "CT-ICU",
 }
 
 # Common rotations (sort first in picker UI)
@@ -113,10 +145,18 @@ def expand_rotation(abbrev: str) -> str:
     """Expand a rotation abbreviation to its full name.
 
     Returns the abbreviation itself if no mapping exists.
+    Tries case-insensitive match as fallback.
     """
     cleaned = abbrev.strip()
     if cleaned in ROTATION_ABBREVS:
         return ROTATION_ABBREVS[cleaned]
+
+    # Case-insensitive fallback
+    cleaned_lower = cleaned.lower()
+    for key, value in ROTATION_ABBREVS.items():
+        if key.lower() == cleaned_lower:
+            return value
+
     return cleaned
 
 

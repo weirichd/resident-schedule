@@ -469,7 +469,7 @@ def get_rotation_map_entries(rows: list[ScheduleRow]) -> list[dict]:
     """Build rotation_map entries from parsed data."""
     seen: dict[str, str] = {}
     for r in rows:
-        if r.rotation not in seen:
+        if r.rotation not in seen and r.rotation != "VACATION":
             seen[r.rotation] = r.rotation_full
 
     entries = []

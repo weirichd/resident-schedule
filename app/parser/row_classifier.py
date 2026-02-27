@@ -12,6 +12,14 @@ VACATION_PATTERN = re.compile(
     r"(Vac|Conf|VACATION)\s*[:/]?\s*\d{1,2}/\d{1,2}", re.IGNORECASE
 )
 BLOCK_LABEL_PATTERN = re.compile(r"^Block\s+\d+$", re.IGNORECASE)
+# Aggregate/count rows: "Anesthesia x 22", "EM x 18", "SICU Interns", "SICU total",
+# "ACS R2s", "TOTAL TCCB", "SICU R2"
+AGGREGATE_PATTERN = re.compile(
+    r"(?:\bx\s+\d+\b"  # "x 22", "x 18"
+    r"|\b(?:total|interns|R2s|R2)\s*$"  # ends with total/interns/R2s/R2
+    r"|^TOTAL\b)",  # starts with TOTAL
+    re.IGNORECASE,
+)
 TITLE_KEYWORDS = {
     "Rotation Schedule",
     "General Surgery",
@@ -140,6 +148,9 @@ def _is_resident_row(row: pd.Series, name_col: int, pgy_col: int | None) -> bool
         return False
     if BLOCK_LABEL_PATTERN.match(name_str):
         return False
+    # Skip aggregate/count rows like "Anesthesia x 22", "SICU Interns", "ACS total"
+    if AGGREGATE_PATTERN.search(name_str):
+        return False
 
     # Check for PGY value
     if pgy_col is not None:
@@ -209,12 +220,15 @@ def classify_row(
         if _is_vacation_annotation_row(row, name_col, rotation_start_col):
             return RowType.VACATION_ANNOTATION, None
 
+    # Resident row — check BEFORE title keywords because title keywords like
+    # "CONFIRMED", "PENDING", "interviews", "opens late", "4th year match" etc.
+    # can appear in status columns (C0) or notes columns (C13/C14) of valid
+    # resident rows, causing false positives in _has_title_keyword.
+    if _is_resident_row(row, name_col, pgy_col):
+        return RowType.RESIDENT, None
+
     # Title/metadata rows
     if _has_title_keyword(row):
         return RowType.SKIP, None
-
-    # Resident row
-    if _is_resident_row(row, name_col, pgy_col):
-        return RowType.RESIDENT, None
 
     return RowType.SKIP, None

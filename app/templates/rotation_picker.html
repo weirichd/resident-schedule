@@ -23,7 +23,7 @@
       <span class="caret"></span></button>
       <ul class="dropdown-menu">
           {% for rot in rotations %}
-          <li><a class="dropdown-item" href="/rotation/?rotation={{ rot.rotation }}">{{ rot.rotation_full }} ({{ rot.rotation }})</a></li>
+          <li><a class="dropdown-item" href="/rotation/?rotation={{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</a></li>
           {% endfor %}
       </ul>
     </div>

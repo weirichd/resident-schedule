@@ -217,40 +217,69 @@ def _strip_annotations(text: str) -> str:
     # Remove bracketed content that's not rotation info
     result = re.sub(r"\[.*?\]", "", result)
 
+    # Remove orphaned annotations before stray ] (vac/conf consumed the opening [)
+    result = re.sub(r"\s[^[\]]+\]", "", result)
+
+    # Remove {Vac: ...} typo (treat like [Vac:])
+    result = re.sub(r"\{Vac:.*?\}", "", result, flags=re.IGNORECASE)
+
     # Remove coverage text
     result = COVERAGE_PATTERN.sub("", result)
 
     # Remove *PENDING* markers
     result = re.sub(r"\*PENDING\*", "", result)
 
-    # Remove "**during XYZ**" notes
+    # Remove "**text**" and "**text" spanning to end of string
     result = re.sub(r"\*\*[^*]+\*\*", "", result)
+    result = re.sub(r"\*\*.*$", "", result)
+
+    # Remove semicolons and everything after (coverage/note text)
+    result = re.sub(r"\s*;.*$", "", result)
+
+    # Remove parenthetical notes: dates, annotations like (-clinical), (wknd request), ()
+    result = re.sub(r"\([^)]*\)", "", result)
+
+    # Remove remaining stray brackets and braces
+    result = re.sub(r"[\[\]{}]", "", result)
+
+    # Remove question marks (never part of valid rotation names)
+    result = result.replace("?", "")
+
+    # Remove stray asterisks (e.g., "Elective*"); meaningful ** patterns already handled above
+    result = result.replace("*", "")
 
     # Clean up
     result = re.sub(r"\s+", " ", result).strip()
-    result = result.strip(" /;,")
+    result = result.strip(" /;,-&")
     return result
 
 
 def _parse_location(rotation: str) -> tuple[str, str | None]:
-    """Parse "East" location from rotation name.
+    """Parse "East" or "UH" location from rotation name.
 
     Returns (cleaned_rotation, location).
     """
     rot = rotation.strip()
 
-    # "East Vascular", "East Gen Surg", "East GS" — keep "East" as part of name
-    # but also mark location
+    # "East - ACS", "East - General" with dash separator (check BEFORE "East X")
+    if rot.startswith("East - "):
+        remainder = rot[7:].strip()
+        return remainder, "East"
+
+    # "East Vascular", "East GS" — established names, keep "East" as part of name
     if rot.startswith("East "):
         remainder = rot[5:].strip()
-        if remainder in ("Vascular", "Gen Surg", "GS", "General", "General Surgery"):
+        if remainder in ("Vascular", "GS", "Gen Surg"):
             return rot, "East"
-        # "East" + something else
-        return rot, "East"
+        # Other "East X" — decompose to rotation=X, location=East
+        return remainder, "East"
 
-    # "East - ACS", "East - General"
-    if rot.startswith("East - "):
-        return rot, "East"
+    # "Vascular - UH" → rotation="Vascular", location="UH" (check BEFORE " UH")
+    if rot.endswith(" - UH"):
+        return rot[:-5].strip(), "UH"
+    # "Vascular UH" → rotation="Vascular", location="UH"
+    if rot.endswith(" UH"):
+        return rot[:-3].strip(), "UH"
 
     return rot, None
 
@@ -302,7 +331,16 @@ def parse_rotation_cell(
     # or "Thoracic 8.25--9.21/SICU"
     # For now, just strip the date specs and treat as compound
     clean = DATE_SPEC_PATTERN.sub("", clean).strip()
-    clean = re.sub(r"\s+", " ", clean).strip(" /")
+    clean = re.sub(r"\s+", " ", clean).strip(" /&")
+
+    # Strip month suffixes: "SICU -Aug", "SICU - Feb" → "SICU"
+    clean = re.sub(
+        r"\s*-\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",
+        "",
+        clean,
+        flags=re.IGNORECASE,
+    )
+    clean = clean.strip()
 
     # Parse location
     rotation, location = _parse_location(clean)
