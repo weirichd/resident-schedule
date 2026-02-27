@@ -7,6 +7,7 @@ import pandas as pd
 
 from app.parser.rotation_map import (
     COMPOUND_ROTATIONS,
+    canonicalize_rotation,
     expand_rotation,
 )
 
@@ -58,6 +59,23 @@ VISITING_SECTION_PATTERN = re.compile(
     r"(DOCTORS|MOUNT\s*CARMEL|MT\.?\s*CARMEL|RIVERSIDE|KETTERING|PARKVIEW)",
     re.IGNORECASE,
 )
+
+# Known specialty tracks appended/prepended to resident names
+# e.g., "Jeffrey Song - Urology", "Vascular - Drayson Campbell"
+SPECIALTY_TRACKS: set[str] = {
+    "Anesthesia",
+    "CT",
+    "EM/IM",
+    "Family Medicine",
+    "NSGY",
+    "OMFS",
+    "Ortho",
+    "Plastics",
+    "Podiatry",
+    "Prelim",
+    "Urology",
+    "Vascular",
+}
 
 
 @dataclass
@@ -124,6 +142,41 @@ def parse_visiting_name(raw_name: str) -> VisitingInfo | None:
             )
 
     return None
+
+
+def clean_resident_name(raw_name: str) -> str:
+    """Strip specialty track prefixes/suffixes from resident names.
+
+    e.g., "Jeffrey Song - Urology" → "Jeffrey Song",
+          "Vascular - Drayson Campbell" → "Drayson Campbell".
+    Only strips known specialty tracks, not visiting institution names.
+    """
+    name = raw_name.strip()
+
+    # "Name - Track" pattern (most common)
+    if " - " in name:
+        parts = name.rsplit(" - ", maxsplit=1)
+        suffix = parts[1].strip()
+        if suffix in SPECIALTY_TRACKS:
+            return parts[0].strip()
+
+    # "Track - Name" pattern (rare: "Vascular - Drayson Campbell")
+    if " - " in name:
+        parts = name.split(" - ", maxsplit=1)
+        prefix = parts[0].strip()
+        if prefix in SPECIALTY_TRACKS:
+            return parts[1].strip()
+
+    # "Name -Track" or "Name- Track" with irregular spacing
+    m = re.match(r"^(.+?)\s*[-–]\s*(.+)$", name)
+    if m:
+        left, right = m.group(1).strip(), m.group(2).strip()
+        if right in SPECIALTY_TRACKS:
+            return left
+        if left in SPECIALTY_TRACKS:
+            return right
+
+    return name
 
 
 def _normalize_institution(raw: str) -> str:
@@ -345,6 +398,9 @@ def parse_rotation_cell(
     # Parse location
     rotation, location = _parse_location(clean)
 
+    # Canonicalize before compound check
+    rotation = canonicalize_rotation(rotation)
+
     # Check if this is a compound rotation that shouldn't be split
     if _is_compound(rotation):
         full = expand_rotation(rotation)
@@ -358,13 +414,14 @@ def parse_rotation_cell(
         ]
 
     # Try to split on "/" for split rotations
-    # e.g., "ACS/Float", "Breast/Elective", "FLOAT/ACS"
-    if "/" in rotation:
+    # e.g., "ACS/Float", "Breast/Elective", "SICU/Rural/SICU"
+    if "/" in rotation and not _is_compound(rotation):
         parts = [p.strip() for p in rotation.split("/") if p.strip()]
-        if len(parts) == 2 and not _is_compound(rotation):
+        if len(parts) >= 2:
             results = []
             for i, part in enumerate(parts):
                 part_rot, part_loc = _parse_location(part)
+                part_rot = canonicalize_rotation(part_rot)
                 full = expand_rotation(part_rot)
                 # Distribute vacations to first part only
                 part_vacs = vacations if i == 0 else []

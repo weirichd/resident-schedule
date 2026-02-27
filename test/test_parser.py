@@ -229,7 +229,7 @@ class TestExcelIntegration:
         path = _get_example_file("2022-2023 Rotation Schedule_June 2022.xlsx")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         assert len(rows) > 200
         names = set(r.name for r in rows)
         assert len(names) > 15
@@ -238,7 +238,7 @@ class TestExcelIntegration:
         path = _get_example_file("Copy of 2023-2024 Rotation Schedule v2.xlsb")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         assert len(rows) > 200
         names = set(r.name for r in rows)
         assert len(names) > 15
@@ -247,7 +247,7 @@ class TestExcelIntegration:
         path = _get_example_file("2024-2025 Rotation Schedule.xlsx")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         assert len(rows) > 300
         names = set(r.name for r in rows)
         assert len(names) > 30
@@ -259,7 +259,7 @@ class TestExcelIntegration:
         path = _get_example_file("2025-2026 Rotation Schedule.xlsx")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         assert len(rows) > 400
         names = set(r.name for r in rows)
         assert len(names) > 30
@@ -274,7 +274,7 @@ class TestExcelIntegration:
         path = _get_example_file("2024-2025 Rotation Schedule.xlsx")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         # Find someone with a split rotation (e.g., "ACS / Float")
         # The parser should have split these into separate entries
         acs_entries = [r for r in rows if r.rotation == "ACS"]
@@ -287,7 +287,7 @@ class TestExcelIntegration:
         path = _get_example_file("2025-2026 Rotation Schedule.xlsx")
         if path is None:
             pytest.skip("Example file not available")
-        rows = parse_excel(path)
+        rows, _ = parse_excel(path)
         # Group by name and check for exact duplicate entries
         from collections import Counter
 

@@ -1,41 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+{% extends "base.html" %}
 
-    <title>Resident Schedule</title>
-</head>
-<body>
-<div class="container">
-    <div class="jumbotron">
-        <h1>OSU Resident Schedule</h1>
-        <p>Rotation Selection</p>
+{% set active_page = 'rotation' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1 class="display-6">View by Rotation</h1>
+        <p class="text-muted">Search for a rotation to view all residents assigned to it.</p>
     </div>
 
-     <div class="dropdown">
-      <button class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown">
-          Select a Rotation
-      <span class="caret"></span></button>
-      <ul class="dropdown-menu">
-          {% for rot in rotations %}
-          <li><a class="dropdown-item" href="/rotation/?rotation={{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</a></li>
-          {% endfor %}
-      </ul>
+    <div class="row">
+        <div class="col-md-8 col-lg-6">
+            <label class="form-label" for="rotation-select">Select a Rotation</label>
+            <select id="rotation-select" placeholder="Type to search...">
+                <option value="">Type to search...</option>
+                <optgroup label="Common Rotations">
+                    {% for rot in rotations if rot.is_common %}
+                    <option value="{{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</option>
+                    {% endfor %}
+                </optgroup>
+                <optgroup label="Other Rotations">
+                    {% for rot in rotations if not rot.is_common %}
+                    <option value="{{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</option>
+                    {% endfor %}
+                </optgroup>
+            </select>
+        </div>
     </div>
+{% endblock %}
 
-    <br />
-
-    <p>
-    This was created by David E. Weirich (<a href="mailto:weirich.david@gmail.com">weirich.david@gmail.com</a>)
-    entirely in his free time.
-    There is no guarantee that this is up to date or correct.
-    Use it at your own risk! ;)
-    </p>
-</div>
-</body>
-</html>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+<script>
+    new TomSelect('#rotation-select', {
+        render: {
+            optgroup_header: function(data, escape) {
+                return '<div class="optgroup-header fw-bold">' + escape(data.label) + '</div>';
+            }
+        },
+        onChange: function(value) {
+            if (value) {
+                window.location.href = '/rotation/?rotation=' + encodeURIComponent(value);
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,52 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+{% extends "base.html" %}
 
-    <title>Resident Schedule</title>
-</head>
-<body>
-<div class="container">
-    <div class="jumbotron">
-        <h1>OSU Resident Schedule</h1>
-        <p>Schedule for a specific person</p>
+{% set active_page = 'resident' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1 class="display-6">View by Resident</h1>
+        <p class="text-muted">Search for a resident to view their full rotation schedule.</p>
     </div>
 
-    <p>Select a name from the list to see that person's schedule.</p>
-
-     <div class="dropdown">
-      <button class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown">
-          Pick a name
-      <span class="caret"></span></button>
-      <ul class="dropdown-menu">
-
-          {% for pgy_num in range(1, 6) %}
-          {% set pgy_key = 'pgy' ~ pgy_num %}
-          {% if names[pgy_key] %}
-          {% if not loop.first %}<li class="divider"></li>{% endif %}
-          <li class="disabled"><a href="#">PGY {{ pgy_num }}</a></li>
-          {% for entry in names[pgy_key] %}
-          <li><a class="dropdown-item" href="/resident/?name={{ entry.name }}">{{ entry.name }}{% if entry.visiting_institution %} <span class="text-muted">({{ entry.visiting_institution }})</span>{% endif %}</a></li>
-          {% endfor %}
-          {% endif %}
-          {% endfor %}
-
-      </ul>
+    <div class="row">
+        <div class="col-md-8 col-lg-6">
+            <label class="form-label" for="resident-select">Select a Resident</label>
+            <select id="resident-select" placeholder="Type a name to search...">
+                <option value="">Type a name to search...</option>
+                {% for pgy_num in range(1, 6) %}
+                {% set pgy_key = 'pgy' ~ pgy_num %}
+                {% if names[pgy_key] %}
+                <optgroup label="PGY {{ pgy_num }}">
+                    {% for entry in names[pgy_key] %}
+                    <option value="{{ entry.name }}">{{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% endif %}</option>
+                    {% endfor %}
+                </optgroup>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
     </div>
+{% endblock %}
 
-    <br />
-
-    <p>
-    This was created by David E. Weirich (<a href="mailto:weirich.david@gmail.com">weirich.david@gmail.com</a>)
-    entirely in his free time.
-    There is no guarantee that this is up to date or correct.
-    Use it at your own risk! ;)
-    </p>
-</div>
-</body>
-</html>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+<script>
+    new TomSelect('#resident-select', {
+        render: {
+            optgroup_header: function(data, escape) {
+                return '<div class="optgroup-header fw-bold">' + escape(data.label) + '</div>';
+            }
+        },
+        onChange: function(value) {
+            if (value) {
+                window.location.href = '/resident/?name=' + encodeURIComponent(value);
+            }
+        }
+    });
+</script>
+{% endblock %}

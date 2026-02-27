@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    {% block extra_css %}{% endblock %}
+    <title>{% block title %}Resident Schedule{% endblock %}</title>
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .footer-section {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .footer-section a {
+            color: #6c757d;
+        }
+        .table {
+            font-size: 0.95rem;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% set _path = request.url.path if request is defined else '' %}
+{% set _active = active_page if active_page is defined else '' %}
+{% if not _active %}
+    {% if _path == '/' %}
+        {% set _active = 'today' %}
+    {% elif _path.startswith('/date') %}
+        {% set _active = 'date' %}
+    {% elif _path.startswith('/rotation') %}
+        {% set _active = 'rotation' %}
+    {% elif _path.startswith('/resident') %}
+        {% set _active = 'resident' %}
+    {% endif %}
+{% endif %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">OSU Resident Schedule</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if _active == 'today' %}active{% endif %}" href="/">Today</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if _active == 'date' %}active{% endif %}" href="/date_picker/">By Date</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if _active == 'rotation' %}active{% endif %}" href="/rotation_picker/">By Rotation</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if _active == 'resident' %}active{% endif %}" href="/resident_picker/">By Resident</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% block content %}{% endblock %}
+
+    <div class="footer-section mb-4">
+        <p>
+            This was created by <a href="mailto:weirich.david@gmail.com">David E. Weirich</a> (aka: Mr. Dr. Huang)
+            entirely in his free time.
+            There is no guarantee that this is up to date or correct.
+            Use it at your own risk! ;)
+        </p>
+        <p>
+            Hosting this webpage isn't free.
+            If you find this page useful, consider buying me a coffee.
+            <a class="btn btn-sm btn-success" href="https://www.buymeacoffee.com/weirichdavid" role="button">Buy me a coffee</a>
+        </p>
+        <p>
+            <a href="https://github.com/weirichd/resident-schedule">Check out the source code on GitHub</a>.
+        </p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

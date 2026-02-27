@@ -9,6 +9,7 @@ import pandas as pd
 from app.parser.cell_parser import (
     ParsedCell,
     VacationInfo,
+    clean_resident_name,
     parse_rotation_cell,
     parse_vacation_annotation_row,
     parse_visiting_name,
@@ -63,31 +64,36 @@ def parse_date_range(s: str, year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
     return start, end
 
 
+def _snap_to_sunday(dt: pd.Timestamp) -> pd.Timestamp:
+    """Find the nearest Sunday at or before the given date."""
+    days_since_sunday = (dt.weekday() + 1) % 7
+    return dt - pd.Timedelta(days=days_since_sunday)
+
+
 def _compute_split_dates(
     block_start: pd.Timestamp, block_end: pd.Timestamp, num_parts: int = 2
 ) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
     """Split a block's date range into equal parts for "/" rotations.
 
-    The split point is the nearest Sunday at the midpoint.
+    Split points are snapped to the nearest Sunday boundary.
     """
-    if num_parts != 2:
+    if num_parts < 2:
         return [(block_start, block_end)]
 
     total_days = (block_end - block_start).days
-    mid_point = block_start + pd.Timedelta(days=total_days // 2)
+    ranges = []
+    current_start = block_start
 
-    # Find nearest Sunday (weekday 6) at or before midpoint
-    days_since_sunday = (mid_point.weekday() + 1) % 7
-    split_sunday = mid_point - pd.Timedelta(days=days_since_sunday)
+    for i in range(num_parts - 1):
+        split_point = block_start + pd.Timedelta(
+            days=total_days * (i + 1) // num_parts
+        )
+        split_sunday = _snap_to_sunday(split_point)
+        ranges.append((current_start, split_sunday))
+        current_start = split_sunday + pd.Timedelta(days=1)
 
-    # First half: block_start to split_sunday
-    # Second half: split_sunday + 1 day (Monday) to block_end
-    split_monday = split_sunday + pd.Timedelta(days=1)
-
-    return [
-        (block_start, split_sunday),
-        (split_monday, block_end),
-    ]
+    ranges.append((current_start, block_end))
+    return ranges
 
 
 def _parse_dates_row(
@@ -134,7 +140,7 @@ def _extract_name(row: pd.Series, name_col: int) -> str:
 
 def parse_excel(
     file_path: str, year: int | None = None, debug: bool = False
-) -> list[ScheduleRow]:
+) -> tuple[list[ScheduleRow], int]:
     """Parse an Excel schedule file and return structured data.
 
     Args:
@@ -143,7 +149,7 @@ def parse_excel(
         debug: If True, log detailed parsing info.
 
     Returns:
-        List of ScheduleRow objects.
+        Tuple of (list of ScheduleRow objects, detected academic year).
     """
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -299,6 +305,9 @@ def parse_excel(
                 institution = visiting.institution
             elif section_institution:
                 institution = section_institution
+            else:
+                # Strip specialty track suffixes ("Song - Urology" → "Song")
+                name = clean_resident_name(name)
 
             logger.debug(
                 f"Row {row_idx}: RESIDENT {name} PGY-{pgy}"
@@ -338,9 +347,11 @@ def parse_excel(
                         )
                     )
                     resident_cells.append((col_idx, cell))
-                elif len(parsed_cells) == 2:
-                    # Split rotation — divide the block dates
-                    split_dates = _compute_split_dates(block_start, block_end)
+                else:
+                    # Split rotation (2-way or 3-way) — divide the block dates
+                    split_dates = _compute_split_dates(
+                        block_start, block_end, len(parsed_cells)
+                    )
                     for i, cell in enumerate(parsed_cells):
                         s_start, s_end = split_dates[i]
                         results.append(
@@ -369,7 +380,7 @@ def parse_excel(
         prev_row_type = row_type
 
     logger.info(f"Parsed {len(results)} schedule entries")
-    return results
+    return results, year
 
 
 def _attach_vacations_to_results(
@@ -439,6 +450,27 @@ def schedule_rows_to_dataframe(rows: list[ScheduleRow]) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(records)
+
+
+def resolve_vacation_dates(rows: list[ScheduleRow], year: int) -> None:
+    """Resolve M/D vacation dates to full YYYY-MM-DD format in place.
+
+    Uses the academic year convention: Jul-Dec → year, Jan-Jun → year+1.
+    """
+    for r in rows:
+        for v in r.vacations:
+            if "/" in v.vac_start and len(v.vac_start) <= 5:
+                try:
+                    start_ts = parse_date(v.vac_start, year)
+                    v.vac_start = start_ts.strftime("%Y-%m-%d")
+                except (ValueError, IndexError):
+                    pass
+            if "/" in v.vac_end and len(v.vac_end) <= 5:
+                try:
+                    end_ts = parse_date(v.vac_end, year)
+                    v.vac_end = end_ts.strftime("%Y-%m-%d")
+                except (ValueError, IndexError):
+                    pass
 
 
 def extract_vacations(rows: list[ScheduleRow]) -> list[dict]:

@@ -1,74 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+{% extends "base.html" %}
 
-    <title>Resident Schedule</title>
-</head>
-<body>
-<div class="container">
-    <div class="jumbotron">
-        <h1>OSU Resident Schedule</h1>
-        <p>{{ header_text }}</p>
+{% block extra_css %}
+<style>
+    .vacation-row {
+        background-color: #fff3cd !important;
+    }
+    .vacation-badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .coverage-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1 class="display-6">{{ header_text }}</h1>
     </div>
 
-    <p>
-        <a href="/date_picker/" class="btn btn-primary" role="button">Select a specific date</a>
-        <a href="/rotation_picker/" class="btn btn-primary" role="button">View schedule for a rotation</a>
-        <a href="/resident_picker/" class="btn btn-primary" role="button">View schedule for a specific person</a>
-    </p>
-
-    {% if groups|length == 0 %}
-
-        <div class="alert alert-danger">
-        No data was found. 
-        This is most likely due to the schedule being out of date.
-        If it is still early in the school year, hang tight, David will eventually get around to
-        updating it.
-        </div>
-
-    {% elif groups|length == 1 %}
-
-        {{ groups[0].df | safe }}
-
-    {% else %}
-        <ul class="nav nav-tabs">
-            {% for group in groups %}
-                {% if loop.first %}
-                <li class="active">
-                {% else %}
-                <li>
-                {% endif %}
-                    <a data-toggle="tab" href="#{{ group.pgy}}">PGY {{ group.pgy }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-
-        <div class="tab-content">
-            {% for group in groups %}
-                {% if loop.first %}
-                <div id="{{ group.pgy}}" class="tab-pane fade in active">
-                {% else %}
-                <div id="{{ group.pgy}}" class="tab-pane fade">
-                {% endif %}
-                    <h3>PGY {{ group.pgy }}</h3>
-                    {{ group.df | safe }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     {% if include_visiting is defined %}
-    <div style="margin-top: 10px; margin-bottom: 10px;">
-        <label>
-            <input type="checkbox" id="visiting-toggle" {% if include_visiting %}checked{% endif %}>
-            Include visiting residents
-        </label>
+    <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="visiting-toggle" {% if include_visiting %}checked{% endif %}>
+            <label class="form-check-label" for="visiting-toggle">
+                Include visiting residents
+            </label>
+        </div>
     </div>
     <script>
     document.getElementById('visiting-toggle').addEventListener('change', function() {
@@ -79,21 +39,48 @@
     </script>
     {% endif %}
 
-    <p>
-    This was created by <a href="mailto:weirich.david@gmail.com">David E. Weirich</a> (aka: Mr. Dr. Huang)
-    entirely in his free time.
-    There is no guarantee that this is up to date or correct.
-    Use it at your own risk! ;)
-    </p>
-    <p>
-    Hosting this webpage isn't free.
-    If you find this page useful, consider buying me a coffee.
-    <a class="btn btn-success" href="https://www.buymeacoffee.com/weirichdavid" role="button">Buy me a coffee</a>
-    </p>
-    <p>
-    <a href="https://github.com/weirichd/resident-schedule">Check out the source code on GitHub</a>.
-    </p>
-</div>
+    {% if groups|length == 0 %}
 
-</body>
-</html>
+        <div class="alert alert-danger">
+        No data was found.
+        This is most likely due to the schedule being out of date.
+        If it is still early in the school year, hang tight, David will eventually get around to
+        updating it.
+        </div>
+
+    {% elif groups|length == 1 %}
+
+        {% set group = groups[0] %}
+        {% include "schedule_table.html" %}
+
+    {% else %}
+        <ul class="nav nav-tabs" role="tablist">
+            {% for group in groups %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if loop.first %}active{% endif %}"
+                            id="tab-{{ group.pgy }}"
+                            data-bs-toggle="tab"
+                            data-bs-target="#pane-{{ group.pgy }}"
+                            type="button"
+                            role="tab"
+                            aria-controls="pane-{{ group.pgy }}"
+                            aria-selected="{{ 'true' if loop.first else 'false' }}">
+                        PGY {{ group.pgy }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="tab-content mt-3">
+            {% for group in groups %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                     id="pane-{{ group.pgy }}"
+                     role="tabpanel"
+                     aria-labelledby="tab-{{ group.pgy }}">
+                    <h3>PGY {{ group.pgy }}</h3>
+                    {% include "schedule_table.html" %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

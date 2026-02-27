@@ -1,0 +1,51 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Resident Name</th>
+            <th>Rotation</th>
+            <th>Starting</th>
+            <th>Until</th>
+            {% if group.has_vacations %}
+            <th>Vacation / Conference</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in group.entries %}
+        <tr{% if entry.on_vacation %} class="vacation-row"{% endif %}>
+            <td>{{ entry.name }}</td>
+            <td>{{ entry.rotation }}</td>
+            <td>{{ entry.start_date }}</td>
+            <td>{{ entry.end_date }}</td>
+            {% if group.has_vacations %}
+            <td>
+                {% for vac in entry.vacations %}
+                    {% if vac.type == "conference" %}
+                        <span class="badge bg-info text-dark vacation-badge">
+                            Conf: {{ vac.start_display }}&ndash;{{ vac.end_display }}
+                        </span>
+                    {% elif vac.active %}
+                        <span class="badge bg-warning text-dark vacation-badge">
+                            ON VACATION: {{ vac.start_display }}&ndash;{{ vac.end_display }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary vacation-badge">
+                            Vac: {{ vac.start_display }}&ndash;{{ vac.end_display }}
+                        </span>
+                    {% endif %}
+                    {% if vac.status %}
+                        <span class="badge {% if vac.status == 'A' %}bg-success{% else %}bg-warning text-dark{% endif %} vacation-badge">
+                            {{ "Approved" if vac.status == "A" else "Pending" }}
+                        </span>
+                    {% endif %}
+                    {% if vac.covered_by %}
+                        <span class="coverage-text">covered by {{ vac.covered_by }}</span>
+                    {% endif %}
+                    {% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

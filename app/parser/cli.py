@@ -11,6 +11,7 @@ from app.models import Base, RotationMap, Schedule, Vacation
 from app.parser.excel_parser import (
     get_rotation_map_entries,
     parse_excel,
+    resolve_vacation_dates,
 )
 
 
@@ -45,7 +46,10 @@ def main(argv: list[str] | None = None) -> None:
 
     # Parse the Excel file
     logger.info(f"Parsing {args.file}...")
-    rows = parse_excel(args.file, year=args.year, debug=args.debug)
+    rows, academic_year = parse_excel(args.file, year=args.year, debug=args.debug)
+
+    # Resolve vacation M/D dates to full YYYY-MM-DD
+    resolve_vacation_dates(rows, academic_year)
 
     if not rows:
         logger.error("No data parsed from the file!")
