@@ -62,15 +62,19 @@ cmd_setup() {
     # 3. Show DNS validation records
     blue "Step 3: DNS validation records for GoDaddy"
     echo ""
-    echo "You need to add CNAME records in GoDaddy DNS to validate the certificate."
-    echo "Retrieve them with:"
+    echo "Add these CNAME records in GoDaddy DNS to validate the certificate:"
     echo ""
-    echo "  aws lightsail get-certificates --certificate-name ${SERVICE_NAME}-cert"
+    aws lightsail get-certificates \
+        --certificate-name "${SERVICE_NAME}-cert" \
+        --query "certificates[0].certificateDetail.domainValidationRecords[].{Host:resourceRecord.name,Value:resourceRecord.value}" \
+        --output table 2>/dev/null || {
+            yellow "Could not fetch records yet — the certificate may still be initializing."
+            echo "Run this to check manually:"
+            echo "  aws lightsail get-certificates --certificate-name ${SERVICE_NAME}-cert"
+        }
     echo ""
-    echo "Look for 'domainValidationRecords' in the output. For each record, add a"
-    echo "CNAME in GoDaddy:"
-    echo "  Host:  _xxxx.osuresidentschedule.com  (the validation name)"
-    echo "  Value: _yyyy.acm-validations.aws      (the validation value)"
+    echo "In GoDaddy: DNS → Add Record → Type: CNAME → Host and Value from above."
+    echo "(For Host, remove the trailing '.osuresidentschedule.com.' — GoDaddy adds it automatically.)"
     echo ""
     echo "After adding the records, wait for validation (usually 5-15 minutes), then run:"
     echo ""
