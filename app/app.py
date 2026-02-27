@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pandas as pd
-from sqlalchemy import func, case
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from fastapi import FastAPI, Request, Query
@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.database import SessionLocal
-from app.models import Schedule, Vacation, RotationMap
+from app.models import Schedule, RotationMap
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")

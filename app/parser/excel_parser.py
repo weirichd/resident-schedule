@@ -18,7 +18,7 @@ from app.parser.layout_detector import (
     LayoutInfo,
     detect_layout,
 )
-from app.parser.rotation_map import expand_rotation, is_common_rotation
+from app.parser.rotation_map import is_common_rotation
 from app.parser.row_classifier import RowType, classify_row
 
 logger = logging.getLogger(__name__)
@@ -178,9 +178,6 @@ def parse_excel(
     prev_row_type: str | None = None
     prev_resident_data: list[tuple[int, ParsedCell]] | None = None  # (col_idx, cell)
     prev_resident_name: str | None = None
-    prev_resident_pgy: int | None = None
-    prev_resident_is_visiting: bool = False
-    prev_resident_institution: str | None = None
 
     for row_idx in range(len(df)):
         row = df.iloc[row_idx]
@@ -364,9 +361,6 @@ def parse_excel(
 
             prev_resident_data = resident_cells
             prev_resident_name = name
-            prev_resident_pgy = pgy
-            prev_resident_is_visiting = is_visiting
-            prev_resident_institution = institution
             prev_row_type = RowType.RESIDENT
             continue
 

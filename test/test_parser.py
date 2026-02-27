@@ -6,12 +6,11 @@ import pandas as pd
 import pytest
 
 from app.parser.cell_parser import (
-    VacationInfo,
     parse_rotation_cell,
     parse_visiting_name,
 )
 from app.parser.excel_parser import parse_date, parse_date_range, parse_excel
-from app.parser.layout_detector import LayoutInfo, detect_layout
+from app.parser.layout_detector import detect_layout
 from app.parser.rotation_map import expand_rotation, is_common_rotation
 from app.parser.row_classifier import RowType, classify_row
 

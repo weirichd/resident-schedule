@@ -7,7 +7,6 @@ import pandas as pd
 
 from app.parser.rotation_map import (
     COMPOUND_ROTATIONS,
-    KNOWN_INSTITUTIONS,
     expand_rotation,
 )
 

@@ -7,10 +7,8 @@ import sys
 import sqlalchemy
 from sqlalchemy.orm import Session
 
-from app.database import init_db
 from app.models import Base, RotationMap, Schedule, Vacation
 from app.parser.excel_parser import (
-    extract_vacations,
     get_rotation_map_entries,
     parse_excel,
 )
