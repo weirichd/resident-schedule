@@ -14,7 +14,7 @@ SERVICE_NAME="${SERVICE_NAME:-resident-schedule}"
 CONTAINER_NAME="resident-schedule"
 IMAGE_NAME="weirich.david/resident_schedule:latest"
 DOMAIN="osuresidentschedule.com"
-REGION="${AWS_REGION:-us-east-1}"
+REGION="${AWS_REGION:-us-east-2}"
 
 # All Lightsail commands use --region to ensure we hit the right region,
 # regardless of the CLI default (which may differ).
