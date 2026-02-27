@@ -22,8 +22,8 @@
           Select a Rotation
       <span class="caret"></span></button>
       <ul class="dropdown-menu">
-          {% for rotation in rotations %}
-          <li><a class="dropdown-item" href="/rotation/?rotation={{ rotation }}">{{ rotation }}</a></li>
+          {% for rot in rotations %}
+          <li><a class="dropdown-item" href="/rotation/?rotation={{ rot.rotation }}">{{ rot.rotation_full }} ({{ rot.rotation }})</a></li>
           {% endfor %}
       </ul>
     </div>

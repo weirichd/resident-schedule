@@ -1,11 +1,9 @@
-FROM python:3.10-slim as base
+FROM python:3.12-slim AS base
 
-MAINTAINER David E. Weirich "weirich.david@gmail.com"
-
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV PYTHONDOCKWRITEBYTECODE 1
-ENV PYTHONFAULTHANDLER 1
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONFAULTHANDLER=1
 
 
 # Install the virtual env
@@ -19,20 +17,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 COPY pyproject.toml .
 COPY poetry.lock .
 
-RUN poetry install --no-dev
+RUN poetry install --without dev
 
 
 # Make the app user
 FROM base AS runtime
 
 COPY --from=python-deps /.venv /.venv
-ENV PATH "/.venv/bin:$PATH"
+ENV PATH="/.venv/bin:$PATH"
 
 RUN useradd --create-home appuser
 WORKDIR /home/appuser
 
 COPY . .
-RUN sed -i "s/debug=True/debug=False/" app/app.py
 
 USER appuser
 

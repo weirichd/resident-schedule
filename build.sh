@@ -9,6 +9,3 @@ fi
 echo -e "\e[1m\e[34mBuilding Docker Image... \e[0m"
 
 docker build --no-cache -t weirich.david/resident_schedule:$tag .
-
-echo -e "\e[1m\e[34mCreating ZIP Archive... \e[0m"
-rm -f app.zip && zip -r app.zip *

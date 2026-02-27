@@ -63,10 +63,21 @@
         </div>
     {% endif %}
 
-    <div class="alert alert-warning">
-    Note that vacations are not indicated in this page.
-    Please check with your team regarding vacations that are scheduled.
+    {% if include_visiting is defined %}
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <label>
+            <input type="checkbox" id="visiting-toggle" {% if include_visiting %}checked{% endif %}>
+            Include visiting residents
+        </label>
     </div>
+    <script>
+    document.getElementById('visiting-toggle').addEventListener('change', function() {
+        var url = new URL(window.location.href);
+        url.searchParams.set('include_visiting', this.checked ? 'true' : 'false');
+        window.location.href = url.toString();
+    });
+    </script>
+    {% endif %}
 
     <p>
     This was created by <a href="mailto:weirich.david@gmail.com">David E. Weirich</a> (aka: Mr. Dr. Huang)

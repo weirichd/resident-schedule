@@ -14,7 +14,7 @@
 <div class="container">
     <div class="jumbotron">
         <h1>OSU Resident Schedule</h1>
-        <p>Schecule for a specific person</p>
+        <p>Schedule for a specific person</p>
     </div>
 
     <p>Select a name from the list to see that person's schedule.</p>
@@ -25,37 +25,15 @@
       <span class="caret"></span></button>
       <ul class="dropdown-menu">
 
-          <li class="disabled"><a href="#">PGY 1</a></li>
-          {% for name in names.pgy1 %}
-          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% for pgy_num in range(1, 6) %}
+          {% set pgy_key = 'pgy' ~ pgy_num %}
+          {% if names[pgy_key] %}
+          {% if not loop.first %}<li class="divider"></li>{% endif %}
+          <li class="disabled"><a href="#">PGY {{ pgy_num }}</a></li>
+          {% for entry in names[pgy_key] %}
+          <li><a class="dropdown-item" href="/resident/?name={{ entry.name }}">{{ entry.name }}{% if entry.visiting_institution %} <span class="text-muted">({{ entry.visiting_institution }})</span>{% endif %}</a></li>
           {% endfor %}
-
-          <li class="divider"></li>
-
-          <li class="disabled"><a href="#">PGY 2</a></li>
-          {% for name in names.pgy2 %}
-          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
-          {% endfor %}
-
-          <li class="divider"></li>
-
-          <li class="disabled"><a href="#">PGY 3</a></li>
-          {% for name in names.pgy3 %}
-          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
-          {% endfor %}
-
-          <li class="divider"></li>
-
-          <li class="disabled"><a href="#">PGY 4</a></li>
-          {% for name in names.pgy4 %}
-          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
-          {% endfor %}
-
-          <li class="divider"></li>
-
-          <li class="disabled"><a href="#">PGY 5</a></li>
-          {% for name in names.pgy5 %}
-          <li><a class="dropdown-item" href="/resident/?name={{ name }}">{{ name }}</a></li>
+          {% endif %}
           {% endfor %}
 
       </ul>
