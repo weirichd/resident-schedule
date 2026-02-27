@@ -16,6 +16,10 @@ IMAGE_NAME="weirich.david/resident_schedule:latest"
 DOMAIN="osuresidentschedule.com"
 REGION="${AWS_REGION:-us-east-1}"
 
+# All Lightsail commands use --region to ensure we hit the right region,
+# regardless of the CLI default (which may differ).
+LS_REGION="--region $REGION"
+
 blue()  { echo -e "\e[1m\e[34m$*\e[0m"; }
 green() { echo -e "\e[1m\e[32m$*\e[0m"; }
 yellow(){ echo -e "\e[1m\e[33m$*\e[0m"; }
@@ -29,30 +33,29 @@ cmd_setup() {
 
     # 1. Create container service
     blue "Step 1: Creating Lightsail container service..."
-    if aws lightsail get-container-services --service-name "$SERVICE_NAME" &>/dev/null; then
+    if aws lightsail $LS_REGIONget-container-services --service-name "$SERVICE_NAME" &>/dev/null; then
         yellow "Service '$SERVICE_NAME' already exists, skipping creation."
     else
-        aws lightsail create-container-service \
+        aws lightsail $LS_REGIONcreate-container-service \
             --service-name "$SERVICE_NAME" \
             --power nano \
-            --scale 1 \
-            --region "$REGION"
+            --scale 1
         green "Container service created."
         echo "Waiting for service to become active (this can take a few minutes)..."
-        aws lightsail wait container-service-active --service-name "$SERVICE_NAME" 2>/dev/null || \
+        aws lightsail $LS_REGIONwait container-service-active --service-name "$SERVICE_NAME" 2>/dev/null || \
             echo "  (wait command not available — check manually with: ./deploy.sh status)"
     fi
 
     # 2. Create TLS certificate
     blue "Step 2: Creating TLS certificate for $DOMAIN..."
-    CERT_EXISTS=$(aws lightsail get-certificates \
+    CERT_EXISTS=$(aws lightsail $LS_REGIONget-certificates \
         --query "certificates[?domainName=='$DOMAIN'].certificateName" \
         --output text 2>/dev/null || echo "")
 
     if [ -n "$CERT_EXISTS" ] && [ "$CERT_EXISTS" != "None" ]; then
         yellow "Certificate for $DOMAIN already exists: $CERT_EXISTS"
     else
-        aws lightsail create-certificate \
+        aws lightsail $LS_REGIONcreate-certificate \
             --certificate-name "${SERVICE_NAME}-cert" \
             --domain-name "$DOMAIN" \
             --subject-alternative-names "www.$DOMAIN"
@@ -64,13 +67,13 @@ cmd_setup() {
     echo ""
     echo "Add these CNAME records in GoDaddy DNS to validate the certificate:"
     echo ""
-    aws lightsail get-certificates \
+    aws lightsail $LS_REGIONget-certificates \
         --certificate-name "${SERVICE_NAME}-cert" \
         --query "certificates[0].certificateDetail.domainValidationRecords[].{Host:resourceRecord.name,Value:resourceRecord.value}" \
         --output table 2>/dev/null || {
             yellow "Could not fetch records yet — the certificate may still be initializing."
             echo "Run this to check manually:"
-            echo "  aws lightsail get-certificates --certificate-name ${SERVICE_NAME}-cert"
+            echo "  aws lightsail $LS_REGIONget-certificates --certificate-name ${SERVICE_NAME}-cert"
         }
     echo ""
     echo "In GoDaddy: DNS → Add Record → Type: CNAME → Host and Value from above."
@@ -89,7 +92,7 @@ cmd_attach_domain() {
     blue "=== Attaching Custom Domain ==="
 
     # Check cert status
-    CERT_STATUS=$(aws lightsail get-certificates \
+    CERT_STATUS=$(aws lightsail $LS_REGIONget-certificates \
         --certificate-name "${SERVICE_NAME}-cert" \
         --query "certificates[0].certificateDetail.status" \
         --output text 2>/dev/null || echo "UNKNOWN")
@@ -102,13 +105,13 @@ cmd_attach_domain() {
         echo "Make sure the DNS validation CNAME records are added in GoDaddy."
         echo ""
         echo "Check status with:"
-        echo "  aws lightsail get-certificates --certificate-name ${SERVICE_NAME}-cert"
+        echo "  aws lightsail $LS_REGIONget-certificates --certificate-name ${SERVICE_NAME}-cert"
         exit 1
     fi
 
     # Enable custom domain on the container service
     blue "Enabling custom domain on container service..."
-    aws lightsail update-container-service \
+    aws lightsail $LS_REGIONupdate-container-service \
         --service-name "$SERVICE_NAME" \
         --public-domain-names "certificateName=${SERVICE_NAME}-cert,domainNames=$DOMAIN,www.$DOMAIN"
 
@@ -118,7 +121,7 @@ cmd_attach_domain() {
     echo ""
 
     # Get the Lightsail default URL
-    DEFAULT_URL=$(aws lightsail get-container-services \
+    DEFAULT_URL=$(aws lightsail $LS_REGIONget-container-services \
         --service-name "$SERVICE_NAME" \
         --query "containerServices[0].url" \
         --output text 2>/dev/null || echo "<check-lightsail-console>")
@@ -146,21 +149,21 @@ cmd_attach_domain() {
 # ---------------------------------------------------------------------------
 cmd_status() {
     blue "=== Service Status ==="
-    aws lightsail get-container-services \
+    aws lightsail $LS_REGIONget-container-services \
         --service-name "$SERVICE_NAME" \
         --query "containerServices[0].{State:state,Power:power,Scale:scale,URL:url,IsDisabled:isDisabled}" \
         --output table
 
     echo ""
     blue "Current deployment:"
-    aws lightsail get-container-service-deployments \
+    aws lightsail $LS_REGIONget-container-service-deployments \
         --service-name "$SERVICE_NAME" \
         --query "deployments[0].{State:state,Version:version,CreatedAt:createdAt}" \
         --output table 2>/dev/null || echo "  No deployments yet."
 
     echo ""
     blue "Certificate status:"
-    aws lightsail get-certificates \
+    aws lightsail $LS_REGIONget-certificates \
         --certificate-name "${SERVICE_NAME}-cert" \
         --query "certificates[0].certificateDetail.{Status:status,Domain:domainName}" \
         --output table 2>/dev/null || echo "  No certificate found."
@@ -226,19 +229,19 @@ cmd_deploy() {
 
     # Step 4: Push to Lightsail
     blue "Step 4: Pushing to AWS Lightsail..."
-    aws lightsail push-container-image \
+    aws lightsail $LS_REGIONpush-container-image \
         --service-name "$SERVICE_NAME" \
         --label "$CONTAINER_NAME" \
         --image "$IMAGE_NAME"
 
     # Step 5: Deploy new version
     blue "Step 5: Deploying new container..."
-    LIGHTSAIL_IMAGE=$(aws lightsail get-container-images \
+    LIGHTSAIL_IMAGE=$(aws lightsail $LS_REGIONget-container-images \
         --service-name "$SERVICE_NAME" \
         --query 'containerImages[0].image' \
         --output text)
 
-    aws lightsail create-container-service-deployment \
+    aws lightsail $LS_REGIONcreate-container-service-deployment \
         --service-name "$SERVICE_NAME" \
         --containers "{
             \"$CONTAINER_NAME\": {
