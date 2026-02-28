@@ -13,6 +13,7 @@ from app.parser.excel_parser import (
     parse_excel,
     resolve_vacation_dates,
 )
+from app.parser.llm_excel_parser import parse_excel_llm
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -36,6 +37,20 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="Parse and display results without writing to database",
     )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="Use LLM-powered parser instead of rules-based",
+    )
+    parser.add_argument(
+        "--llm-model",
+        type=str,
+        default=None,
+        help=(
+            "Override the LLM model name "
+            "(default: claude-haiku-4-5 for Anthropic, llama3.2 for ollama)"
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -45,8 +60,18 @@ def main(argv: list[str] | None = None) -> None:
     logger = logging.getLogger(__name__)
 
     # Parse the Excel file
-    logger.info(f"Parsing {args.file}...")
-    rows, academic_year = parse_excel(args.file, year=args.year, debug=args.debug)
+    if args.llm:
+        logger.info(f"Parsing {args.file} with LLM parser...")
+        rows, academic_year = parse_excel_llm(
+            args.file,
+            year=args.year,
+            debug=args.debug,
+            model=args.llm_model,
+            ollama_model=args.llm_model,
+        )
+    else:
+        logger.info(f"Parsing {args.file}...")
+        rows, academic_year = parse_excel(args.file, year=args.year, debug=args.debug)
 
     # Resolve vacation M/D dates to full YYYY-MM-DD
     resolve_vacation_dates(rows, academic_year)
