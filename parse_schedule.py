@@ -32,7 +32,7 @@ Outpatient
 Jeopardy
 Transplant
 Mount Carmel East
-Vascular University Hospital
+Vascular
 Vascular East
 Colorectal Surgery
 Pediatric Surgery
@@ -42,7 +42,9 @@ Night Float
 Endoscopy
 Burn
 Outpatient Surgical Oncology
+Thoracic
 Elective
+Trauma
 """.strip()
 
 VALID_PROGRAMS = """
@@ -75,7 +77,10 @@ parentheses shows what you may see in the spreadsheet cells.
 {valid_rotations}
 
 If a cell contains a rotation not in this list, use your best judgment to map it to the \
-closest match, or use the cell text as-is for `rotation`.
+closest match, or use the cell text as-is for `rotation`. \
+"EGS" is an abbreviation for "Acute Care Surgery" (NOT East General Surgery). \
+If a cell contains an unrecognizable single word (e.g., "Something") that cannot be \
+mapped to any known rotation, skip that cell.
 
 ## Valid Programs
 
@@ -118,19 +123,22 @@ Output dates as YYYY-MM-DD format. The academic year is {academic_year}-{next_ye
 
 4. Split rotations: If a cell contains two rotations separated by "/" (like "ACS/SICU"), \
 this means the resident does the first rotation for the first half of the block and the \
-second rotation for the second half. Output these as two separate rotation entries. To \
-compute the split date: divide the period evenly in half. The first rotation runs from \
-the block start_date to the midpoint, and the second rotation runs from the day after \
-the midpoint to the block end_date. Exception: compound rotations like "SONC/HPB", \
+second rotation for the second half. Output these as two separate rotation entries. \
+The split point must always fall on a Monday. For 8-week blocks, split evenly at 4 weeks \
+each. For 7-week blocks, the first rotation gets 4 weeks and the second gets 3 weeks. \
+In general, find the Monday closest to the midpoint that gives the first rotation the \
+larger (or equal) share. Exception: compound rotations like "SONC/HPB", \
 "Cardiac/CVICU" are single rotations, not splits.
 
 5. FLOAT with explicit date ranges: When a cell contains "FLOAT [date range]" with an \
-explicit date range in brackets, use those dates for the FLOAT portion instead of \
-midpoint splitting. For example, "FLOAT [7/1-7/26]/ACS" in block 7/1-8/30 means FLOAT \
-runs 7/1-7/26 and ACS runs 7/27-8/30. Similarly, "ACS / FLOAT [11/30-12/27]" means ACS \
-runs from block start to 11/29 and FLOAT runs 11/30-12/27. If a FLOAT has multiple \
-non-contiguous date ranges (e.g., "FLOAT [2/15-2/28, 3/29-4/4] / ACS"), ask for \
-clarification — these are unusual and may represent alternating segments.
+explicit date range in brackets, use those exact dates for the FLOAT portion — this \
+overrides the Monday-split rule above. For example, "FLOAT [7/1-7/26]/ACS" in block \
+7/1-8/30 means FLOAT runs 7/1-7/26 and ACS runs 7/27-8/30. Similarly, \
+"ACS / FLOAT [11/30-12/27]" means ACS runs from block start to 11/29 and FLOAT runs \
+11/30-12/27. If a FLOAT has multiple non-contiguous date ranges \
+(e.g., "FLOAT [2/15-2/28, 3/29-4/4] / ACS"), the block is split multiple times — \
+create a FLOAT entry for each listed date range, and fill the remaining dates with the \
+other rotation (e.g., ACS).
 
 6. `location`: Set to "East" if the rotation is at the East campus. Any rotation with \
 "East" in its name implies location "East" (e.g., "East - ACS" means Acute Care Surgery \
@@ -139,7 +147,7 @@ at East, "East Vascular" or "Vascular East" means Vascular East). Otherwise null
 7. East campus rotations: "East - ACS" means rotation="Acute Care Surgery" with \
 location="East". "East - General" or just "East" as a rotation maps to \
 "East General Surgery". "East Vascular" or "Vascular East" maps to "Vascular East". \
-"Vascular - UH" or "Vascular UH" maps to "Vascular University Hospital" (location is \
+"Vascular - UH", "Vascular UH", or just "Vascular" maps to "Vascular" (location is \
 NOT East).
 
 8. `is_visiting`: Set to true if the resident is from a visiting institution (Doctors \
@@ -152,7 +160,8 @@ true. Otherwise null.
 
 10. Electives and `is_elective`: If a cell indicates an elective rotation, set \
 `is_elective` to true. The formatting is inconsistent — you may see "Elective - HPB", \
-"HPB - Elective", "Elective (HPB)", "Elect HPB", or other variations. Use your \
+"HPB - Elective", "Elective (HPB)", "Elect HPB", or other variations. A rotation name \
+followed by "?" (e.g., "Cardiac?") also indicates an elective. Use your \
 judgment to identify elective rotations and extract the sub-type. The `rotation` field \
 should contain ONLY the sub-type (e.g., "HPB", "MIS", "Peds"), not the word \
 "Elective". If the cell just says "Elective" with no sub-type, use rotation="Elective". \
@@ -163,7 +172,9 @@ If the sub-type is "TBD" (e.g., "Elective - TBD"), skip that rotation cell entir
 the rotation for an entire block, add a vacation entry covering the full block date \
 range. For split cells like "BURN/VACATIO" or "VACATION/BURN" in PGY-2, split evenly: \
 one half is the rotation (e.g., Burn), the other half produces a vacation entry. \
-"Jeopardy/Vacatio" or "Vacation/Jeopardy" follows the same pattern.
+"Jeopardy/Vacatio" or "Vacation/Jeopardy" follows the same pattern. \
+"OFF" in a cell (e.g., "Outpatient SONC / OFF") means vacation for that portion — \
+split the block and create a vacation entry for the OFF period.
 
 12. Vacation/conference annotations: Some rows below a resident contain vacation or \
 conference annotations (e.g., "V 8/11-8/17", "C 9/1-9/5"). Extract these as vacation \
@@ -178,8 +189,9 @@ entries for the resident above. Use `vac_type` of "vacation" for V annotations a
 - Rows that are clearly planning notes (e.g., columns with "CONFIRMED", "TENTATIVE", \
 interview scheduling notes)
 - Rows where the name contains "TBD" (e.g., "Categorical - TBD", "Prelim - TBD")
-- If you encounter group rows like "Doctors x 4" or "Anesthesia x 22" and are unsure \
-whether each filled block represents a distinct person, ask for clarification.
+- Group rows like "Doctors x 4", "Doctors x 5", "Anesthesia x 22", "Riverside (x5)", \
+etc.: each filled block represents a distinct visiting resident. Create a separate \
+resident entry for each filled block in that row.
 
 14. Home-program rotations: Non-General Surgery residents (e.g., Plastics, Urology, \
 Orthopedics, Anesthesia) sometimes have blocks where they are on their own service \
@@ -238,20 +250,29 @@ Return a JSON object (no markdown fences, no extra text) with three keys:
 
 ## Asking for Clarification
 
-If any part of the schedule is ambiguous or unclear — for example, a rotation name you \
-can't confidently map, a name that looks malformed, a date range that doesn't make \
-sense, or a section you're unsure how to categorize — you SHOULD ask for clarification \
-before producing the final JSON.
+IMPORTANT: Only ask questions as an absolute last resort, when the data is truly \
+ambiguous and a wrong guess could corrupt the schedule. Do NOT ask about:
+- Obvious typos or truncations (e.g., "VACATIO" → "Vacation", "Night Night Float" → \
+"Night Float", "Mel-Sarc" → "Melanoma and Sarcoma", "Breast-Endocrine" → \
+"Breast and Endocrine")
+- Mappings that are covered by the rules above (e.g., "East - ACS", "SONC", \
+"Outpatient SONC", split blocks with vacation)
+- TBD rows — the rules already say to skip these
+- Date header typos that have an obvious correction (e.g., "5/3-3/30" → "5/3-5/30")
+
+Use your best judgment and proceed. Only ask if you genuinely cannot determine the \
+correct interpretation and guessing wrong would produce incorrect data.
 
 To ask questions, respond with a JSON object with a single key "questions" containing \
 a list of strings:
 
 ```
-{{"questions": ["What rotation does 'XYZ' map to?", "Is 'Smith - Urology' a visiting resident?"]}}
+{{"questions": ["What rotation does 'XYZ' map to?"]}}
 ```
 
 The user will answer your questions, and then you should produce the final JSON. \
-Ask all your questions at once rather than one at a time.
+Ask all your questions at once rather than one at a time. Keep questions to a maximum \
+of 3 — if you have more, resolve the rest with your best guess.
 
 When you are confident about the data and have no questions, return ONLY the JSON \
 object with "residents", "rotations", and "vacations" keys. No commentary, no markdown \
@@ -448,18 +469,36 @@ def call_claude(
     while True:
         logger.info("Calling Claude (%s)...", model)
 
-        message = client.messages.create(
+        with client.messages.stream(
             model=model,
-            max_tokens=16000,
+            max_tokens=32000,
             system=system_prompt,
             messages=messages,
-        )
+        ) as stream:
+            message = stream.get_final_message()
 
         total_input_tokens += message.usage.input_tokens
         total_output_tokens += message.usage.output_tokens
 
         response_text = message.content[0].text
         logger.debug("Raw response length: %d chars", len(response_text))
+
+        if message.stop_reason == "max_tokens":
+            logger.warning(
+                "Response truncated (hit max_tokens). "
+                "Asking Claude to continue..."
+            )
+            messages.append({"role": "assistant", "content": response_text})
+            messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "Your response was truncated. "
+                        "Please continue the JSON from where you left off."
+                    ),
+                }
+            )
+            continue
 
         parsed = json.loads(_strip_fences(response_text))
 

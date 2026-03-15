@@ -27,12 +27,6 @@ Residents may use vacation flexibly throughout the year. If a resident wishes to
 - As full weeks, or
 - As individual weekdays when used for interviews or conferences.
 
-**Exceptions:** The following do not count toward vacation or time away:
-
-- Scheduled holiday blocks
-- Professional development courses for which the resident is nominated by the program
-- Approved conferences (see conference policy)
-
 ## Vacation Restrictions
 
 To maintain safe clinical coverage, the following restrictions apply:
@@ -46,7 +40,7 @@ To maintain safe clinical coverage, the following restrictions apply:
 
 | Call Pool | Services |
 |---|---|
-| UH Senior Call Pool | CRS, HPB, Breast/Endo, Mel/Sarc, ACS, ZE, Hernia/East, Outpatient |
+| UH Senior Call Pool | CRS, HPB, Breast/Endo, Mel/Sarc, ACS, ZE, Outpatient |
 | UH PGY3 Call Pool | ZE, ACS, Colorectal, SICU, Doctors HPB |
 | PGY2 Call Pool | Burn, Breast, Outpatient SONC, Vascular, Thoracic, Endoscopy |
 | Intern Day Call Pool | ACS, ZE, Colorectal, East General Surgery, East ACS, East Vascular, Endoscopy, Hernia/East |
@@ -58,10 +52,9 @@ To maintain safe clinical coverage, the following restrictions apply:
   - The resident is in the final two weeks of the chief year, or
   - The request is specifically approved by the Service Education Liaison, Administrative Chief, and Program Leadership.
 - **Vacation Blackout Periods:** Vacation is not permitted during:
-  - Block 1 (July)
-  - Block 7
-  - Block 13 (June)
-- Vacation may not be combined with holiday blocks.
+  - 7/1 - 7/30
+  - 12/20 - 1/5
+  - 6/1 - 6/30
 - The following rotations do not permit vacation:
   - Night float (all PGY levels)
   - Intern Simulation rotation

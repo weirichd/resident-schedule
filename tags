@@ -9,22 +9,32 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	5.9.0	//
+1. Rotation Page UX Cleanup	TODO.md	/^## 1. Rotation Page UX Cleanup$/;"	s	chapter:TODO
+2. Vacation Validity Checker	TODO.md	/^## 2. Vacation Validity Checker$/;"	s	chapter:TODO
+3. Parser Improvements (lower priority)	TODO.md	/^## 3. Parser Improvements (lower priority)$/;"	s	chapter:TODO
 Architecture	CLAUDE.md	/^## Architecture$/;"	s	chapter:CLAUDE.md
 Base	app/models.py	/^Base = declarative_base()$/;"	v
 CLAUDE.md	CLAUDE.md	/^# CLAUDE.md$/;"	c
 Call Pools	vacation_rules.md	/^### Call Pools$/;"	S	section:Vacation and Leave Policy""Vacation Restrictions
 Code Quality	CLAUDE.md	/^## Code Quality$/;"	s	chapter:CLAUDE.md
+Coming Next	app/templates/rotation_detail.html	/^    <h3>Coming Next<\/h3>$/;"	j
 Common Commands	CLAUDE.md	/^## Common Commands$/;"	s	chapter:CLAUDE.md
+Current	app/templates/rotation_detail.html	/^    <h3>Current<\/h3>$/;"	j
 DATABASE_URL	app/database.py	/^DATABASE_URL = "sqlite:\/\/\/resident_schedule.db"$/;"	v
+DB_PATH	migrate_elective_names.py	/^DB_PATH = "resident_schedule.db"$/;"	v
+DB_PATH	migrate_resident_flags.py	/^DB_PATH = "resident_schedule.db"$/;"	v
 Deployment	CLAUDE.md	/^## Deployment$/;"	s	chapter:CLAUDE.md
 Deployment	README.md	/^## Deployment$/;"	s	chapter:OSU Residents Schedule App
 Exceptions	vacation_rules.md	/^## Exceptions$/;"	s	chapter:Vacation and Leave Policy
+GENERIC_PATTERNS	migrate_resident_flags.py	/^GENERIC_PATTERNS = [$/;"	v
+Implementation:	TODO.md	/^### Implementation:$/;"	S	section:TODO""2. Vacation Validity Checker
 Import a Schedule	README.md	/^### Import a Schedule$/;"	S	section:OSU Residents Schedule App""Usage
 OSU Residents Schedule App	README.md	/^# OSU Residents Schedule App$/;"	c
 Outside/Off-Service Rotators	vacation_rules.md	/^## Outside\/Off-Service Rotators$/;"	s	chapter:Vacation and Leave Policy
 PGY {{ group.pgy }}	app/templates/home.html	/^                    <h3>PGY {{ group.pgy }}<\/h3>$/;"	j
 Project Overview	CLAUDE.md	/^## Project Overview$/;"	s	chapter:CLAUDE.md
 Resident	app/models.py	/^class Resident(Base):$/;"	c
+Rules to implement (from `vacation_rules.md`):	TODO.md	/^### Rules to implement (from `vacation_rules.md`):$/;"	S	section:TODO""2. Vacation Validity Checker
 Run Locally	README.md	/^### Run Locally$/;"	S	section:OSU Residents Schedule App""Usage
 Run with Docker	README.md	/^### Run with Docker$/;"	S	section:OSU Residents Schedule App""Usage
 SYSTEM_PROMPT	parse_schedule.py	/^SYSTEM_PROMPT = """\\$/;"	v
@@ -32,6 +42,7 @@ Schedule	app/models.py	/^class Schedule(Base):$/;"	c
 Select a Date	app/templates/date_picker.html	/^        <h1 class="display-6">Select a Date<\/h1>$/;"	h
 SessionLocal	app/database.py	/^SessionLocal = sessionmaker(bind=engine)$/;"	v
 Setup	README.md	/^## Setup$/;"	s	chapter:OSU Residents Schedule App
+TODO	TODO.md	/^# TODO$/;"	c
 TODO List	README.md	/^## TODO List$/;"	s	chapter:OSU Residents Schedule App
 Usage	README.md	/^## Usage$/;"	s	chapter:OSU Residents Schedule App
 VALID_PROGRAMS	parse_schedule.py	/^VALID_PROGRAMS = """$/;"	v
@@ -43,56 +54,55 @@ Vacation Scheduling and Approval	vacation_rules.md	/^## Vacation Scheduling and 
 Vacation and Leave Policy	vacation_rules.md	/^# Vacation and Leave Policy$/;"	c
 View by Resident	app/templates/resident_picker.html	/^        <h1 class="display-6">View by Resident<\/h1>$/;"	h
 View by Rotation	app/templates/rotation_picker.html	/^        <h1 class="display-6">View by Rotation<\/h1>$/;"	h
+_MODEL_PRICING	parse_schedule.py	/^_MODEL_PRICING: dict[str, tuple[float, float]] = {$/;"	v	typeref:typename:dict[str, tuple[float, float]]
 __tablename__	app/models.py	/^    __tablename__ = "resident"$/;"	v	class:Resident	file:
 __tablename__	app/models.py	/^    __tablename__ = "schedule"$/;"	v	class:Schedule	file:
 __tablename__	app/models.py	/^    __tablename__ = "vacation"$/;"	v	class:Vacation	file:
 _detect_year	parse_schedule.py	/^def _detect_year(df: pd.DataFrame, file_path: str) -> int:$/;"	f	typeref:typename:int
 _entries_to_dicts	app/app.py	/^def _entries_to_dicts($/;"	f	typeref:typename:list[dict]
 _group_by_pgy	app/app.py	/^def _group_by_pgy(entries: list[dict]) -> list[dict]:$/;"	f	typeref:typename:list[dict]
+_load_state	parse_schedule.py	/^def _load_state(state_path: str) -> dict:$/;"	f	typeref:typename:dict
+_log_usage	parse_schedule.py	/^def _log_usage(model: str, input_tokens: int, output_tokens: int) -> None:$/;"	f	typeref:typename:None
 _make_engine	test/test_models.py	/^def _make_engine():$/;"	f
+_save_state	parse_schedule.py	/^def _save_state($/;"	f	typeref:typename:None
+_state_file_path	parse_schedule.py	/^def _state_file_path(input_file: str) -> str:$/;"	f	typeref:typename:str
 _strip_fences	parse_schedule.py	/^def _strip_fences(text: str) -> str:$/;"	f	typeref:typename:str
-action	parse_excel.py	/^        action = input("(s)kip, (d)ate, (r)esident, (q)uit: ")$/;"	v
 app	app/app.py	/^app = FastAPI()$/;"	v
-args	parse_excel.py	/^    args = parser.parse_args()$/;"	v
 call_claude	parse_schedule.py	/^def call_claude($/;"	f	typeref:typename:dict
-conn	parse_excel.py	/^    conn = sqlalchemy.create_engine(f"sqlite:\/\/\/{output}", echo=False)$/;"	v
-current_date_data	parse_excel.py	/^            current_date_data = handle_date_row(row, year)$/;"	v
-current_date_data	parse_excel.py	/^    current_date_data = None$/;"	v
+current-pane-{{ group.pgy }}	app/templates/rotation_detail.html	/^                     id="current-pane-{{ group.pgy }}"$/;"	I
+current-tab-{{ group.pgy }}	app/templates/rotation_detail.html	/^                            id="current-tab-{{ group.pgy }}"$/;"	I
 date	app/templates/date_picker.html	/^                    <input class="form-control" id="date" name="date" type="date" required>$/;"	I
 date_page	app/app.py	/^async def date_page($/;"	f
 date_picker	app/app.py	/^def date_picker(request: Request):$/;"	f
-df	parse_excel.py	/^    df = pd.read_excel(file_path)$/;"	v
 end_date	app/models.py	/^    end_date = Column(Text, nullable=False)$/;"	v	class:Schedule
 engine	app/database.py	/^engine = create_engine(DATABASE_URL, echo=False)$/;"	v
 excel_to_csv	parse_schedule.py	/^def excel_to_csv(file_path: str) -> tuple[str, int]:$/;"	f	typeref:typename:tuple[str,int]
-file_path	parse_excel.py	/^    file_path = args.file$/;"	v
-final_table_list	parse_excel.py	/^    final_table_list = []$/;"	v
 get_all_resident_names	app/app.py	/^def get_all_resident_names() -> list[dict]:$/;"	f	typeref:typename:list[dict]
 get_all_rotation_names	app/app.py	/^def get_all_rotation_names() -> list[dict]:$/;"	f	typeref:typename:list[dict]
+get_coming_next_entries	app/app.py	/^def get_coming_next_entries($/;"	f	typeref:typename:list[dict]
 get_schedule_entries	app/app.py	/^def get_schedule_entries($/;"	f	typeref:typename:list[dict]
 get_session	app/app.py	/^def get_session() -> Session:$/;"	f	typeref:typename:Session
 get_session	app/database.py	/^def get_session() -> Session:$/;"	f	typeref:typename:Session
-handle_date_row	parse_excel.py	/^def handle_date_row(row: pd.Series, year: int) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
-handle_resident_row	parse_excel.py	/^def handle_resident_row(row: pd.Series, dates: pd.DataFrame):$/;"	f
 home	app/app.py	/^async def home(request: Request, include_visiting: bool = True):$/;"	f
 id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Resident
 id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Schedule
 id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Vacation
 init_db	app/database.py	/^def init_db(db_engine=None):$/;"	f
 is_elective	app/models.py	/^    is_elective = Column(Integer, default=0)$/;"	v	class:Schedule
+is_name	app/models.py	/^    is_name = Column(Integer, default=1)$/;"	v	class:Resident
+is_prelim	app/models.py	/^    is_prelim = Column(Integer, default=0)$/;"	v	class:Resident
 is_visiting	app/models.py	/^    is_visiting = Column(Integer, default=0)$/;"	v	class:Resident
 location	app/models.py	/^    location = Column(Text, nullable=True)$/;"	v	class:Schedule
 logger	parse_schedule.py	/^logger = logging.getLogger(__name__)$/;"	v
+main	migrate_elective_names.py	/^def main():$/;"	f
+main	migrate_resident_flags.py	/^def main():$/;"	f
 main	parse_schedule.py	/^def main() -> None:$/;"	f	typeref:typename:None
 name	app/models.py	/^    name = Column(Text, nullable=False)$/;"	v	class:Resident
 navbarNav	app/templates/base.html	/^        <div class="collapse navbar-collapse" id="navbarNav">$/;"	I
-output	parse_excel.py	/^    output = args.output$/;"	v
+next-pane-{{ group.pgy }}	app/templates/rotation_detail.html	/^                     id="next-pane-{{ group.pgy }}"$/;"	I
+next-tab-{{ group.pgy }}	app/templates/rotation_detail.html	/^                            id="next-tab-{{ group.pgy }}"$/;"	I
 pane-{{ group.pgy }}	app/templates/home.html	/^                     id="pane-{{ group.pgy }}"$/;"	I
-parse_date	parse_excel.py	/^def parse_date(s: str, year: int) -> pd.Timestamp:$/;"	f	typeref:typename:pd.Timestamp
-parse_date_range	parse_excel.py	/^def parse_date_range(s: str, year: int) -> Tuple[pd.Timestamp, pd.Timestamp]:$/;"	f	typeref:typename:Tuple[pd.Timestamp,pd.Timestamp]
-parser	parse_excel.py	/^    parser = argparse.ArgumentParser($/;"	v
 pd	app/app.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	parse_excel.py	/^import pandas as pd$/;"	I	nameref:module:pandas
 pd	parse_schedule.py	/^import pandas as pd$/;"	I	nameref:module:pandas
 pgy	app/models.py	/^    pgy = Column(Integer, nullable=False)$/;"	v	class:Resident
 program	app/models.py	/^    program = Column(Text, nullable=False, default="General Surgery")$/;"	v	class:Resident
@@ -100,14 +110,13 @@ pytest cache directory	.pytest_cache/README.md	/^# pytest cache directory #$/;"	
 resident	app/models.py	/^    resident = relationship("Resident", back_populates="schedule_entries")$/;"	v	class:Schedule
 resident	app/models.py	/^    resident = relationship("Resident", back_populates="vacations")$/;"	v	class:Vacation
 resident-select	app/templates/resident_picker.html	/^            <select id="resident-select" placeholder="Type a name to search...">$/;"	I
-resident_data	parse_excel.py	/^            resident_data = handle_resident_row(row, current_date_data)$/;"	v
 resident_id	app/models.py	/^    resident_id = Column(Integer, ForeignKey("resident.id"), nullable=False)$/;"	v	class:Schedule
 resident_id	app/models.py	/^    resident_id = Column(Integer, ForeignKey("resident.id"), nullable=False)$/;"	v	class:Vacation
 resident_picker	app/app.py	/^def resident_picker(request: Request):$/;"	f
 resident_schedule	app/app.py	/^def resident_schedule($/;"	f
-result	parse_excel.py	/^    result = pd.concat(final_table_list)$/;"	v
 rotation	app/models.py	/^    rotation = Column(Text, nullable=False)$/;"	v	class:Schedule
 rotation-select	app/templates/rotation_picker.html	/^            <select id="rotation-select" placeholder="Type to search...">$/;"	I
+rotation_detail	app/app.py	/^def rotation_detail($/;"	f
 rotation_picker	app/app.py	/^def rotation_picker(request: Request):$/;"	f
 rotation_schedule	app/app.py	/^def rotation_schedule($/;"	f
 schedule_entries	app/models.py	/^    schedule_entries = relationship("Schedule", back_populates="resident")$/;"	v	class:Resident
@@ -124,8 +133,8 @@ vac_start	app/models.py	/^    vac_start = Column(Text, nullable=False)$/;"	v	cla
 vac_type	app/models.py	/^    vac_type = Column(Text, default="vacation")$/;"	v	class:Vacation
 vacations	app/models.py	/^    vacations = relationship("Vacation", back_populates="resident")$/;"	v	class:Resident
 visiting-toggle	app/templates/home.html	/^            <input class="form-check-input" type="checkbox" id="visiting-toggle" {% if include_v/;"	I
+visiting-toggle	app/templates/rotation_detail.html	/^            <input class="form-check-input" type="checkbox" id="visiting-toggle" {% if include_v/;"	I
 visiting_institution	app/models.py	/^    visiting_institution = Column(Text, nullable=True)$/;"	v	class:Resident
 write_to_db	parse_schedule.py	/^def write_to_db(data: dict, db_path: str) -> None:$/;"	f	typeref:typename:None
-year	parse_excel.py	/^        year = pd.Timestamp.today().year$/;"	v
-year	parse_excel.py	/^    year = args.year$/;"	v
 {{ header_text }}	app/templates/home.html	/^        <h1 class="display-6">{{ header_text }}<\/h1>$/;"	h
+{{ rotation_name }}	app/templates/rotation_detail.html	/^        <h1 class="display-6">{{ rotation_name }}<\/h1>$/;"	h

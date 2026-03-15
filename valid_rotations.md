@@ -8,7 +8,7 @@ Outpatient
 Jeopardy
 Transplant 
 Mount Carmel East
-Vascular University Hopsital
+Vascular
 Vascular East
 Colorectal Surgery
 Pediatric Surgery
@@ -18,4 +18,6 @@ Night Float
 Endoscopy
 Burn
 Outpatient Surgical Oncology
+Thoracic
 Elective
+Trauma
