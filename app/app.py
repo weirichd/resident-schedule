@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 import pandas as pd
@@ -9,7 +10,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.database import SessionLocal
-from app.models import Resident, Schedule
+from app.models import Resident, Schedule, Vacation
+from app.vacation_checker import check_vacation, get_academic_year_bounds
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -362,3 +364,158 @@ def resident_picker(request: Request):
             "names": name_list,
         },
     )
+
+
+def _pgy_grouped_residents() -> dict[str, list[dict]]:
+    """Get all residents grouped by PGY level for template dropdowns."""
+    all_residents = get_all_resident_names()
+    name_list: dict[str, list[dict]] = {}
+    for pgy_num in range(1, 6):
+        pgy_key = f"pgy{pgy_num}"
+        name_list[pgy_key] = [r for r in all_residents if r["pgy"] == str(pgy_num)]
+    return name_list
+
+
+@app.get("/vacation_checker/", response_class=HTMLResponse)
+def vacation_checker_form(request: Request):
+    return templates.TemplateResponse(
+        "vacation_checker.html",
+        {"request": request, "names": _pgy_grouped_residents(), "result": None},
+    )
+
+
+@app.get("/vacation_check/", response_class=HTMLResponse)
+def vacation_check(
+    request: Request,
+    resident_id: int = Query(...),
+    start_date: str = Query(...),
+    end_date: str = Query(...),
+):
+    req_start = date.fromisoformat(start_date)
+    req_end = date.fromisoformat(end_date)
+    ay_start, ay_end = get_academic_year_bounds(req_start)
+
+    session = get_session()
+    try:
+        resident_obj = session.query(Resident).get(resident_id)
+        if resident_obj is None:
+            return templates.TemplateResponse(
+                "vacation_checker.html",
+                {"request": request, "names": _pgy_grouped_residents(), "result": None},
+            )
+
+        resident = {
+            "id": resident_obj.id,
+            "name": resident_obj.name,
+            "pgy": resident_obj.pgy,
+            "program": resident_obj.program,
+            "is_visiting": bool(resident_obj.is_visiting),
+            "is_prelim": bool(resident_obj.is_prelim),
+        }
+
+        # This resident's schedule for the academic year
+        res_schedule_rows = (
+            session.query(Schedule)
+            .filter(
+                Schedule.resident_id == resident_id,
+                Schedule.end_date >= ay_start.isoformat(),
+                Schedule.start_date <= ay_end.isoformat(),
+            )
+            .all()
+        )
+        resident_schedule = [
+            {
+                "resident_id": s.resident_id,
+                "rotation": s.rotation,
+                "start_date": date.fromisoformat(s.start_date),
+                "end_date": date.fromisoformat(s.end_date),
+            }
+            for s in res_schedule_rows
+        ]
+
+        # This resident's existing vacations in the academic year
+        res_vac_rows = (
+            session.query(Vacation)
+            .filter(
+                Vacation.resident_id == resident_id,
+                Vacation.vac_end >= ay_start.isoformat(),
+                Vacation.vac_start <= ay_end.isoformat(),
+            )
+            .all()
+        )
+        resident_vacations = [
+            {
+                "vac_start": date.fromisoformat(v.vac_start),
+                "vac_end": date.fromisoformat(v.vac_end),
+                "vac_type": v.vac_type,
+            }
+            for v in res_vac_rows
+        ]
+
+        # All schedule entries overlapping the requested dates (for conflicts)
+        all_sched_rows = (
+            session.query(Schedule)
+            .join(Resident)
+            .options(joinedload(Schedule.resident))
+            .filter(
+                Schedule.end_date >= start_date,
+                Schedule.start_date <= end_date,
+            )
+            .all()
+        )
+        all_schedules = [
+            {
+                "resident_id": s.resident_id,
+                "resident_name": s.resident.name,
+                "rotation": s.rotation,
+                "start_date": date.fromisoformat(s.start_date),
+                "end_date": date.fromisoformat(s.end_date),
+            }
+            for s in all_sched_rows
+        ]
+
+        # All vacations overlapping the requested dates (for conflicts)
+        all_vac_rows = (
+            session.query(Vacation)
+            .join(Resident)
+            .options(joinedload(Vacation.resident))
+            .filter(
+                Vacation.vac_end >= start_date,
+                Vacation.vac_start <= end_date,
+            )
+            .all()
+        )
+        all_vacations = [
+            {
+                "resident_id": v.resident_id,
+                "resident_name": v.resident.name,
+                "vac_start": date.fromisoformat(v.vac_start),
+                "vac_end": date.fromisoformat(v.vac_end),
+                "vac_type": v.vac_type,
+            }
+            for v in all_vac_rows
+        ]
+
+        result = check_vacation(
+            resident=resident,
+            req_start=req_start,
+            req_end=req_end,
+            resident_schedule=resident_schedule,
+            resident_vacations=resident_vacations,
+            all_schedules=all_schedules,
+            all_vacations=all_vacations,
+        )
+
+        return templates.TemplateResponse(
+            "vacation_checker.html",
+            {
+                "request": request,
+                "names": _pgy_grouped_residents(),
+                "result": result,
+                "selected_resident_id": resident_id,
+                "selected_start": start_date,
+                "selected_end": end_date,
+            },
+        )
+    finally:
+        session.close()

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% set active_page = 'vacation' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1 class="display-6">Vacation Checker</h1>
+        <p class="text-muted">Check if proposed vacation dates comply with program policy.</p>
+    </div>
+
+    <form method="GET" action="/vacation_check/">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label" for="resident-select">Resident</label>
+                <select id="resident-select" name="resident_id" required>
+                    <option value="">Select a resident...</option>
+                    {% for pgy_num in range(1, 6) %}
+                    {% set pgy_key = 'pgy' ~ pgy_num %}
+                    {% if names[pgy_key] %}
+                    <optgroup label="PGY {{ pgy_num }}">
+                        {% for entry in names[pgy_key] %}
+                        <option value="{{ entry.id }}"
+                            {% if selected_resident_id is defined and entry.id == selected_resident_id %}selected{% endif %}>
+                            {{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="start-date">Start Date</label>
+                <input type="date" id="start-date" name="start_date" class="form-control" required
+                       value="{{ selected_start|default('') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="end-date">End Date</label>
+                <input type="date" id="end-date" name="end_date" class="form-control" required
+                       value="{{ selected_end|default('') }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Check</button>
+            </div>
+        </div>
+    </form>
+
+    {% if result %}
+    <hr class="my-4">
+
+    <h4>
+        {{ result.resident_name }} (PGY-{{ result.resident_pgy }})
+        &mdash; {{ result.requested_start.strftime('%b %d, %Y') }}
+        to {{ result.requested_end.strftime('%b %d, %Y') }}
+        ({{ result.weekdays_requested }} weekdays)
+    </h4>
+
+    {% if result.exempt %}
+        <div class="alert alert-info mt-3">
+            <strong>Exempt:</strong> {{ result.exempt_reason }}
+        </div>
+    {% else %}
+        {% if result.all_passed %}
+            <div class="alert alert-success mt-3">All checks passed.</div>
+        {% else %}
+            <div class="alert alert-danger mt-3">One or more checks failed.</div>
+        {% endif %}
+
+        <div class="mt-3">
+        {% for rule in result.results %}
+            <div class="card mb-2 border-{{ 'success' if rule.passed else 'danger' }}">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-start">
+                        {% if rule.passed %}
+                            <span class="text-success me-2 fs-5">&#10003;</span>
+                        {% else %}
+                            <span class="text-danger me-2 fs-5">&#10007;</span>
+                        {% endif %}
+                        <div>
+                            <strong>{{ rule.display_name }}</strong>:
+                            {{ rule.message }}
+                            {% if rule.details %}
+                            <ul class="mb-0 mt-1">
+                                {% for detail in rule.details %}
+                                <li class="small text-muted">{{ detail }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+<script>
+    new TomSelect('#resident-select', {
+        render: {
+            optgroup_header: function(data, escape) {
+                return '<div class="optgroup-header fw-bold">' + escape(data.label) + '</div>';
+            }
+        }
+    });
+</script>
+{% endblock %}
