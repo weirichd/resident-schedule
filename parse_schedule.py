@@ -485,8 +485,7 @@ def call_claude(
 
         if message.stop_reason == "max_tokens":
             logger.warning(
-                "Response truncated (hit max_tokens). "
-                "Asking Claude to continue..."
+                "Response truncated (hit max_tokens). " "Asking Claude to continue..."
             )
             messages.append({"role": "assistant", "content": response_text})
             messages.append(

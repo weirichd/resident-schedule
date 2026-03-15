@@ -43,8 +43,8 @@ To maintain safe clinical coverage, the following restrictions apply:
 | UH Senior Call Pool | CRS, HPB, Breast/Endo, Mel/Sarc, ACS, ZE, Outpatient |
 | UH PGY3 Call Pool | ZE, ACS, Colorectal, SICU, Doctors HPB |
 | PGY2 Call Pool | Burn, Breast, Outpatient SONC, Vascular, Thoracic, Endoscopy |
-| Intern Day Call Pool | ACS, ZE, Colorectal, East General Surgery, East ACS, East Vascular, Endoscopy, Hernia/East |
-| East Call Pool | *(not specified)* |
+| Intern Day Call Pool | ACS, ZE, Colorectal |
+| East Call Pool | East, Outpatient, East Vascular, East General, East ACS |
 
 - **Two weeks of vacation may not be from the same service/block** unless separated by at least 4 clinical weeks of service, unless special approval is obtained.
 - **Back-to-back vacation weeks are not permitted** unless:
