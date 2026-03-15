@@ -42,17 +42,7 @@ A web form where residents can check whether a proposed vacation is allowed unde
 
 ---
 
-## 3. Unique Resident IDs and Name Flags
-
-Residents should get a unique ID in the DB so that generic names (e.g., "Prelim", "Vascular", "PLASTICS") can be distinguished behind the scenes.
-
-- Add `is_prelim` flag to `resident` table
-- Add `is_name` flag to `resident` table (set `FALSE` for generic/placeholder residents like "Vascular" or "PLASTICS")
-- Allows multiple residents named "Prelim" to each have their own schedule entries
-
----
-
-## 4. Parser Improvements (lower priority)
+## 3. Parser Improvements (lower priority)
 
 Issues noticed during initial parse that could be addressed in future iterations:
 

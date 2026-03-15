@@ -150,10 +150,12 @@ are NOT visiting — they are on the "Mount Carmel East" rotation.
 9. `visiting_institution`: The name of the visiting institution if `is_visiting` is \
 true. Otherwise null.
 
-10. Electives and `is_elective`: Rotations like "Elective - HPB", "Elective - Peds", \
-"Elective - MIS", "Elective - Vascular", etc. are elective rotations. Set \
-`is_elective` to true. Keep the full name including the sub-type (e.g., \
-rotation="Elective - HPB", is_elective=true). Do NOT collapse them to just "Elective". \
+10. Electives and `is_elective`: If a cell indicates an elective rotation, set \
+`is_elective` to true. The formatting is inconsistent — you may see "Elective - HPB", \
+"HPB - Elective", "Elective (HPB)", "Elect HPB", or other variations. Use your \
+judgment to identify elective rotations and extract the sub-type. The `rotation` field \
+should contain ONLY the sub-type (e.g., "HPB", "MIS", "Peds"), not the word \
+"Elective". If the cell just says "Elective" with no sub-type, use rotation="Elective". \
 An elective rotation may use a name not in the valid rotations list — that is fine. \
 If the sub-type is "TBD" (e.g., "Elective - TBD"), skip that rotation cell entirely.
 
