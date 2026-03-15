@@ -72,3 +72,4 @@ Issues noticed during initial parse that could be addressed in future iterations
 - Clean up name inconsistencies (e.g., "Patel, Sohil" vs last-name-only format)
 - Vacation count seems low — verify all PGY-2 vacation blocks were captured
 - Consider adding `max_tokens` increase or multi-call strategy for larger schedules
+- Elective rotations: strip "Elective - " prefix from rotation name (e.g., "Elective - HPB" → "HPB") since `is_elective` flag already tracks this

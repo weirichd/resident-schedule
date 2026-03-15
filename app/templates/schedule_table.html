@@ -19,7 +19,12 @@
                     <span class="badge" style="font-size: 0.7rem; font-weight: 500; background-color: #d0e7f7; color: #31708f;">{{ entry.program }}</span>
                 {% endif %}
             </td>
-            <td><a href="/rotation/{{ entry.rotation_raw | urlencode }}/">{{ entry.rotation }}</a></td>
+            <td>
+                <a href="/rotation/{{ entry.rotation_raw | urlencode }}/">{{ entry.rotation }}</a>
+                {% if entry.is_elective %}
+                    <span class="badge" style="font-size: 0.7rem; font-weight: 500; background-color: #d4edda; color: #155724;">Elective</span>
+                {% endif %}
+            </td>
             <td>{{ entry.start_date }}</td>
             <td>{{ entry.end_date }}</td>
             {% if group.has_vacations %}

@@ -145,6 +145,7 @@ def _entries_to_dicts(
                 "program": r.program,
                 "rotation": rotation_display,
                 "rotation_raw": e.rotation,
+                "is_elective": e.is_elective,
                 "start_date": start.strftime("%B %d"),
                 "end_date": end.strftime("%B %d"),
                 "vacations": vacations,
