@@ -26,10 +26,12 @@ poetry run black .
 poetry run flake8
 poetry run mypy app
 
-# Import Excel schedule into SQLite (automated parser)
-poetry run python -m app.parser.cli --file <excel_file.xlsx> --output <database.db> [--year <year>]
-poetry run python -m app.parser.cli --file <file> --output <db> --debug    # verbose output
-poetry run python -m app.parser.cli --file <file> --output <db> --dry-run  # parse without writing
+# Parse Excel schedule into SQLite (Claude-powered)
+python parse_schedule.py --file <excel_file.xlsx> --output <database.db>
+python parse_schedule.py --file <file> --output <db> --year <year>    # override year
+python parse_schedule.py --file <file> --output <db> --debug           # verbose output
+python parse_schedule.py --file <file> --output <db> --dry-run         # parse without writing
+python parse_schedule.py --file <file> --output <db> --model <model>   # override Claude model
 
 # Docker build and run
 docker build -t resident-schedule .
@@ -38,23 +40,18 @@ docker run --rm -p 8000:8000 resident-schedule
 
 ## Architecture
 
-**Data flow:** Excel → `app/parser/` → SQLite (`resident_schedule.db`) → FastAPI (`app/app.py`) → Jinja2 templates
+**Data flow:** Excel → `parse_schedule.py` (Claude API) → SQLite (`resident_schedule.db`) → FastAPI (`app/app.py`) → Jinja2 templates
 
-**Database schema:** Two tables defined in `app/models.py` using SQLAlchemy ORM:
-- `schedule` — rotation assignments (name, pgy, rotation, rotation_full, location, is_visiting, visiting_institution, is_general_surgery)
-- `vacation` — vacation/conference annotations linked to schedule entries via schedule_id FK
+**Database schema:** Three tables defined in `app/models.py` using SQLAlchemy ORM:
+- `resident` — resident info (name, pgy, program, is_visiting, visiting_institution)
+- `schedule` — rotation assignments (resident_id FK, start_date, end_date, rotation, location, is_elective)
+- `vacation` — vacation/conference annotations (resident_id FK, vac_start, vac_end, vac_type)
 
 **app/database.py:** Engine and session factory setup.
 
 **app/app.py:** Single-file FastAPI app. All routes and ORM query functions live here. Key query functions: `get_data_from_date()`, `get_rotation_schedule()`, `get_resident_schedule()`. DataFrames are formatted to HTML via `prepare_table()`. Supports `include_visiting` filter on schedule endpoints.
 
-**Parser module (`app/parser/`):**
-- `rotation_map.py` — abbreviation mappings, compound rotation set
-- `layout_detector.py` — auto-detect column positions (name, PGY, rotation start) from Excel files
-- `row_classifier.py` — classify rows as date, resident, vacation annotation, section header, or skip
-- `cell_parser.py` — parse vacation annotations, "/" split rotations, East location, visiting residents
-- `excel_parser.py` — main orchestrator that ties detection, classification, and parsing together
-- `cli.py` — CLI entry point
+**`parse_schedule.py`:** Standalone script at repo root. Reads Excel → converts to CSV → sends to Claude API → writes Schedule + Vacation rows to SQLite. Requires `ANTHROPIC_API_KEY` env var.
 
 **Routes:** `/` (today's schedule), `/date/` (by date), `/rotation/` (by rotation), `/resident/` (by name). Each has a corresponding `_picker` route for selection UI. All schedule endpoints accept `?include_visiting=true|false`.
 

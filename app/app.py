@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.database import SessionLocal
-from app.models import Schedule
+from app.models import Resident, Schedule
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -31,10 +31,14 @@ def get_schedule_entries(
     """
     session = get_session()
     try:
-        q = session.query(Schedule).options(joinedload(Schedule.vacations))
+        q = (
+            session.query(Schedule)
+            .join(Resident)
+            .options(joinedload(Schedule.resident).joinedload(Resident.vacations))
+        )
 
         if name:
-            q = q.filter(Schedule.name == name).order_by(Schedule.start_date)
+            q = q.filter(Resident.name == name).order_by(Schedule.start_date)
         elif rotation:
             q = q.filter(Schedule.rotation == rotation).order_by(Schedule.start_date)
         else:
@@ -46,7 +50,7 @@ def get_schedule_entries(
             )
 
         if not include_visiting and not name:
-            q = q.filter(Schedule.is_visiting == 0)
+            q = q.filter(Resident.is_visiting == 0)
 
         entries = q.all()
         return _entries_to_dicts(entries, query_date=date)
@@ -55,26 +59,18 @@ def get_schedule_entries(
 
 
 def get_all_rotation_names() -> list[dict]:
-    """Get all rotation names, sorted: common first (alphabetical), then uncommon."""
+    """Get all distinct rotation names, sorted alphabetically."""
     session = get_session()
     try:
         rotations = (
-            session.query(
-                Schedule.rotation,
-                Schedule.rotation_full,
-            )
-            .filter(Schedule.rotation != "VACATION")
-            .group_by(Schedule.rotation, Schedule.rotation_full)
+            session.query(Schedule.rotation)
+            .filter(Schedule.rotation != "Vacation")
+            .group_by(Schedule.rotation)
             .all()
         )
 
-        result = []
-        for rot, rot_full in rotations:
-            result.append(
-                {"rotation": rot, "rotation_full": rot_full}
-            )
-
-        result.sort(key=lambda x: x["rotation_full"])
+        result = [{"rotation": rot[0]} for rot in rotations]
+        result.sort(key=lambda x: x["rotation"])
         return result
     finally:
         session.close()
@@ -83,17 +79,7 @@ def get_all_rotation_names() -> list[dict]:
 def get_all_resident_names() -> list[dict]:
     session = get_session()
     try:
-        residents = (
-            session.query(
-                Schedule.pgy,
-                Schedule.name,
-                Schedule.is_visiting,
-                Schedule.visiting_institution,
-            )
-            .group_by(Schedule.pgy, Schedule.name)
-            .order_by(Schedule.name)
-            .all()
-        )
+        residents = session.query(Resident).order_by(Resident.name).all()
         return [
             {
                 "pgy": str(r.pgy),
@@ -113,59 +99,56 @@ def _entries_to_dicts(
     """Convert ORM schedule entries to dicts with vacation awareness."""
     records = []
     for e in entries:
-        rotation_display = e.rotation_full or e.rotation
+        r = e.resident
+        rotation_display = e.rotation
         if e.location:
             rotation_display = f"{rotation_display} ({e.location})"
 
         start = pd.Timestamp(e.start_date)
         end = pd.Timestamp(e.end_date)
 
-        # Build vacation info
+        # Build vacation info from resident's vacations that overlap this entry
         vacations = []
         on_vacation = False
-        for v in e.vacations:
+        for v in r.vacations:
+            try:
+                vs = pd.Timestamp(v.vac_start)
+                ve = pd.Timestamp(v.vac_end)
+            except (ValueError, TypeError):
+                continue
+
+            # Only include vacations that overlap this schedule entry
+            if ve < start or vs > end:
+                continue
+
             vac_entry = {
                 "type": v.vac_type,
                 "start": v.vac_start,
                 "end": v.vac_end,
+                "start_display": vs.strftime("%b %d"),
+                "end_display": ve.strftime("%b %d"),
+                "active": False,
             }
 
-            # Format display dates
-            try:
-                vs = pd.Timestamp(v.vac_start)
-                ve = pd.Timestamp(v.vac_end)
-                vac_entry["start_display"] = vs.strftime("%b %d")
-                vac_entry["end_display"] = ve.strftime("%b %d")
-
-                # Check if query date falls within this vacation
-                if query_date:
-                    qd = pd.Timestamp(query_date)
-                    if vs <= qd <= ve:
-                        on_vacation = True
-                        vac_entry["active"] = True
-                    else:
-                        vac_entry["active"] = False
-                else:
-                    vac_entry["active"] = False
-            except (ValueError, TypeError):
-                # Fallback for M/D format dates (pre-migration)
-                vac_entry["start_display"] = v.vac_start
-                vac_entry["end_display"] = v.vac_end
-                vac_entry["active"] = False
+            if query_date:
+                qd = pd.Timestamp(query_date)
+                if vs <= qd <= ve:
+                    on_vacation = True
+                    vac_entry["active"] = True
 
             vacations.append(vac_entry)
 
         records.append(
             {
-                "pgy": e.pgy,
-                "name": e.name,
+                "pgy": r.pgy,
+                "name": r.name,
                 "rotation": rotation_display,
                 "start_date": start.strftime("%B %d"),
                 "end_date": end.strftime("%B %d"),
                 "vacations": vacations,
                 "on_vacation": on_vacation,
-                "is_visiting": e.is_visiting,
-                "visiting_institution": e.visiting_institution,
+                "is_visiting": r.is_visiting,
+                "visiting_institution": r.visiting_institution,
             }
         )
     return records
@@ -286,9 +269,7 @@ def resident_picker(request: Request):
     name_list: dict[str, list[dict]] = {}
     for pgy_num in range(1, 6):
         pgy_key = f"pgy{pgy_num}"
-        name_list[pgy_key] = [
-            r for r in all_residents if r["pgy"] == str(pgy_num)
-        ]
+        name_list[pgy_key] = [r for r in all_residents if r["pgy"] == str(pgy_num)]
 
     return templates.TemplateResponse(
         "resident_picker.html",

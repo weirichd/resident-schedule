@@ -17,16 +17,9 @@
             <label class="form-label" for="rotation-select">Select a Rotation</label>
             <select id="rotation-select" placeholder="Type to search...">
                 <option value="">Type to search...</option>
-                <optgroup label="Common Rotations">
-                    {% for rot in rotations if rot.is_common %}
-                    <option value="{{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</option>
-                    {% endfor %}
-                </optgroup>
-                <optgroup label="Other Rotations">
-                    {% for rot in rotations if not rot.is_common %}
-                    <option value="{{ rot.rotation }}">{{ rot.rotation_full }}{% if rot.rotation != rot.rotation_full %} ({{ rot.rotation }}){% endif %}</option>
-                    {% endfor %}
-                </optgroup>
+                {% for rot in rotations %}
+                <option value="{{ rot.rotation }}">{{ rot.rotation }}</option>
+                {% endfor %}
             </select>
         </div>
     </div>
@@ -36,11 +29,6 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
 <script>
     new TomSelect('#rotation-select', {
-        render: {
-            optgroup_header: function(data, escape) {
-                return '<div class="optgroup-header fw-bold">' + escape(data.label) + '</div>';
-            }
-        },
         onChange: function(value) {
             if (value) {
                 window.location.href = '/rotation/?rotation=' + encodeURIComponent(value);

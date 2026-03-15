@@ -9,264 +9,123 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	5.9.0	//
-AGGREGATE_PATTERN	app/parser/row_classifier.py	/^AGGREGATE_PATTERN = re.compile($/;"	v
-APPROVAL_PATTERN	app/parser/cell_parser.py	/^APPROVAL_PATTERN = re.compile(r"\\(([AP])\\)")$/;"	v
 Architecture	CLAUDE.md	/^## Architecture$/;"	s	chapter:CLAUDE.md
-BLOCK_LABEL_PATTERN	app/parser/row_classifier.py	/^BLOCK_LABEL_PATTERN = re.compile(r"^Block\\s+\\d+$", re.IGNORECASE)$/;"	v
 Base	app/models.py	/^Base = declarative_base()$/;"	v
-CANONICAL_ABBREV	app/parser/rotation_map.py	/^CANONICAL_ABBREV: dict[str, str] = {$/;"	v	typeref:typename:dict[str, str]
 CLAUDE.md	CLAUDE.md	/^# CLAUDE.md$/;"	c
-COMMON_ROTATIONS	app/parser/rotation_map.py	/^COMMON_ROTATIONS: set[str] = {$/;"	v	typeref:typename:set[str]
-COMPOUND_ROTATIONS	app/parser/rotation_map.py	/^COMPOUND_ROTATIONS: set[str] = {$/;"	v	typeref:typename:set[str]
-CONF_PATTERN	app/parser/cell_parser.py	/^CONF_PATTERN = re.compile($/;"	v
-COVERAGE_PATTERN	app/parser/cell_parser.py	/^COVERAGE_PATTERN = re.compile(r"([A-Z][.\\w]+(?:\\s\\w+)?)\\s+to\\s+cover", re.IGNORECASE)$/;"	v
 Call Pools	vacation_rules.md	/^### Call Pools$/;"	S	section:Vacation and Leave Policy""Vacation Restrictions
 Code Quality	CLAUDE.md	/^## Code Quality$/;"	s	chapter:CLAUDE.md
 Common Commands	CLAUDE.md	/^## Common Commands$/;"	s	chapter:CLAUDE.md
 DATABASE_URL	app/database.py	/^DATABASE_URL = "sqlite:\/\/\/resident_schedule.db"$/;"	v
-DATE	app/parser/row_classifier.py	/^    DATE = "date"$/;"	v	class:RowType
-DATE_RANGE_PATTERN	app/parser/layout_detector.py	/^DATE_RANGE_PATTERN = re.compile(r"\\d{1,2}\/\\d{1,2}\\s*-\\s*\\d{1,2}\/\\d{1,2}")$/;"	v
-DATE_SPEC_PATTERN	app/parser/cell_parser.py	/^DATE_SPEC_PATTERN = re.compile(r"(\\d{1,2})[.\/](\\d{1,2})\\s*-+\\s*(\\d{1,2})[.\/](\\d{1,2})")$/;"	v
-DEFAULT_ANTHROPIC_MODEL	app/parser/llm_cell_parser.py	/^DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"$/;"	v
-DEFAULT_OLLAMA_MODEL	app/parser/llm_cell_parser.py	/^DEFAULT_OLLAMA_MODEL = "llama3.2"$/;"	v
-DEFAULT_OLLAMA_URL	app/parser/llm_cell_parser.py	/^DEFAULT_OLLAMA_URL = "http:\/\/localhost:11434"$/;"	v
 Deployment	CLAUDE.md	/^## Deployment$/;"	s	chapter:CLAUDE.md
 Deployment	README.md	/^## Deployment$/;"	s	chapter:OSU Residents Schedule App
-EXAMPLES_DIR	test/test_parser.py	/^EXAMPLES_DIR = os.path.join(os.path.dirname(__file__), "..", "examples")$/;"	v
 Exceptions	vacation_rules.md	/^## Exceptions$/;"	s	chapter:Vacation and Leave Policy
 Import a Schedule	README.md	/^### Import a Schedule$/;"	S	section:OSU Residents Schedule App""Usage
-KNOWN_INSTITUTIONS	app/parser/rotation_map.py	/^KNOWN_INSTITUTIONS: set[str] = {$/;"	v	typeref:typename:set[str]
-LayoutInfo	app/parser/layout_detector.py	/^class LayoutInfo:$/;"	c
-MAX_BATCH_SIZE	app/parser/llm_excel_parser.py	/^MAX_BATCH_SIZE = 40$/;"	v
 OSU Residents Schedule App	README.md	/^# OSU Residents Schedule App$/;"	c
 Outside/Off-Service Rotators	vacation_rules.md	/^## Outside\/Off-Service Rotators$/;"	s	chapter:Vacation and Leave Policy
 PGY {{ group.pgy }}	app/templates/home.html	/^                    <h3>PGY {{ group.pgy }}<\/h3>$/;"	j
-PGY_HEADER_PATTERN	app/parser/row_classifier.py	/^PGY_HEADER_PATTERN = re.compile(r"PGY[\\s-]*(\\d)", re.IGNORECASE)$/;"	v
-ParsedCell	app/parser/cell_parser.py	/^class ParsedCell:$/;"	c
 Project Overview	CLAUDE.md	/^## Project Overview$/;"	s	chapter:CLAUDE.md
-RESIDENT	app/parser/row_classifier.py	/^    RESIDENT = "resident"$/;"	v	class:RowType
-ROTATION_ABBREVS	app/parser/rotation_map.py	/^ROTATION_ABBREVS: dict[str, str] = {$/;"	v	typeref:typename:dict[str, str]
-ROTATION_CONTEXT	app/parser/llm_cell_parser.py	/^ROTATION_CONTEXT = "\\n".join(_ABBREV_LINES)$/;"	v
-RotationMap	app/models.py	/^class RotationMap(Base):$/;"	c
-RowType	app/parser/row_classifier.py	/^class RowType:$/;"	c
+Resident	app/models.py	/^class Resident(Base):$/;"	c
 Run Locally	README.md	/^### Run Locally$/;"	S	section:OSU Residents Schedule App""Usage
 Run with Docker	README.md	/^### Run with Docker$/;"	S	section:OSU Residents Schedule App""Usage
-SECTION_HEADER	app/parser/row_classifier.py	/^    SECTION_HEADER = "section_header"$/;"	v	class:RowType
-SKIP	app/parser/row_classifier.py	/^    SKIP = "skip"$/;"	v	class:RowType
-SPECIALTY_TRACKS	app/parser/cell_parser.py	/^SPECIALTY_TRACKS: set[str] = {$/;"	v	typeref:typename:set[str]
-SYSTEM_PROMPT	app/parser/llm_cell_parser.py	/^SYSTEM_PROMPT = f"""\\$/;"	v
+SYSTEM_PROMPT	parse_schedule.py	/^SYSTEM_PROMPT = """\\$/;"	v
 Schedule	app/models.py	/^class Schedule(Base):$/;"	c
-ScheduleRow	app/parser/excel_parser.py	/^class ScheduleRow:$/;"	c
 Select a Date	app/templates/date_picker.html	/^        <h1 class="display-6">Select a Date<\/h1>$/;"	h
 SessionLocal	app/database.py	/^SessionLocal = sessionmaker(bind=engine)$/;"	v
 Setup	README.md	/^## Setup$/;"	s	chapter:OSU Residents Schedule App
-TITLE_KEYWORDS	app/parser/row_classifier.py	/^TITLE_KEYWORDS = {$/;"	v
 TODO List	README.md	/^## TODO List$/;"	s	chapter:OSU Residents Schedule App
-TestCellParser	test/test_parser.py	/^class TestCellParser:$/;"	c
-TestDateParsing	test/test_parser.py	/^class TestDateParsing:$/;"	c
-TestExcelIntegration	test/test_parser.py	/^class TestExcelIntegration:$/;"	c
-TestLayoutDetection	test/test_parser.py	/^class TestLayoutDetection:$/;"	c
-TestRotationMap	test/test_parser.py	/^class TestRotationMap:$/;"	c
-TestRowClassification	test/test_parser.py	/^class TestRowClassification:$/;"	c
-TestVisitingName	test/test_parser.py	/^class TestVisitingName:$/;"	c
 Usage	README.md	/^## Usage$/;"	s	chapter:OSU Residents Schedule App
-VACATION_ANNOTATION	app/parser/row_classifier.py	/^    VACATION_ANNOTATION = "vacation_annotation"$/;"	v	class:RowType
-VACATION_PATTERN	app/parser/row_classifier.py	/^VACATION_PATTERN = re.compile($/;"	v
-VAC_CONF_PATTERN	app/parser/cell_parser.py	/^VAC_CONF_PATTERN = re.compile($/;"	v
-VAC_PATTERN	app/parser/cell_parser.py	/^VAC_PATTERN = re.compile($/;"	v
-VISITING_DASH	app/parser/cell_parser.py	/^VISITING_DASH = re.compile($/;"	v
-VISITING_PAREN	app/parser/cell_parser.py	/^VISITING_PAREN = re.compile($/;"	v
-VISITING_SECTION_PATTERN	app/parser/cell_parser.py	/^VISITING_SECTION_PATTERN = re.compile($/;"	v
+VALID_PROGRAMS	parse_schedule.py	/^VALID_PROGRAMS = """$/;"	v
+VALID_ROTATIONS	parse_schedule.py	/^VALID_ROTATIONS = """$/;"	v
 Vacation	app/models.py	/^class Vacation(Base):$/;"	c
 Vacation	vacation_rules.md	/^## Vacation$/;"	s	chapter:Vacation and Leave Policy
 Vacation Restrictions	vacation_rules.md	/^## Vacation Restrictions$/;"	s	chapter:Vacation and Leave Policy
 Vacation Scheduling and Approval	vacation_rules.md	/^## Vacation Scheduling and Approval$/;"	s	chapter:Vacation and Leave Policy
 Vacation and Leave Policy	vacation_rules.md	/^# Vacation and Leave Policy$/;"	c
-VacationInfo	app/parser/cell_parser.py	/^class VacationInfo:$/;"	c
 View by Resident	app/templates/resident_picker.html	/^        <h1 class="display-6">View by Resident<\/h1>$/;"	h
 View by Rotation	app/templates/rotation_picker.html	/^        <h1 class="display-6">View by Rotation<\/h1>$/;"	h
-VisitingInfo	app/parser/cell_parser.py	/^class VisitingInfo:$/;"	c
-_ABBREV_LINES	app/parser/llm_cell_parser.py	/^_ABBREV_LINES = [f"  {k} = {v}" for k, v in ROTATION_ABBREVS.items()]$/;"	v
-__init__	app/parser/layout_detector.py	/^    def __init__($/;"	m	class:LayoutInfo
-__repr__	app/parser/layout_detector.py	/^    def __repr__(self) -> str:$/;"	m	class:LayoutInfo	typeref:typename:str
-__tablename__	app/models.py	/^    __tablename__ = "rotation_map"$/;"	v	class:RotationMap	file:
+__tablename__	app/models.py	/^    __tablename__ = "resident"$/;"	v	class:Resident	file:
 __tablename__	app/models.py	/^    __tablename__ = "schedule"$/;"	v	class:Schedule	file:
 __tablename__	app/models.py	/^    __tablename__ = "vacation"$/;"	v	class:Vacation	file:
-_attach_vacations_to_results	app/parser/excel_parser.py	/^def _attach_vacations_to_results($/;"	f	typeref:typename:None
-_build_user_prompt	app/parser/llm_cell_parser.py	/^def _build_user_prompt(cells: list[tuple[int, str]]) -> str:$/;"	f	typeref:typename:str
-_call_anthropic	app/parser/llm_cell_parser.py	/^def _call_anthropic($/;"	f	typeref:typename:str
-_call_ollama	app/parser/llm_cell_parser.py	/^def _call_ollama($/;"	f	typeref:typename:str
-_compute_split_dates	app/parser/excel_parser.py	/^def _compute_split_dates($/;"	f	typeref:typename:list[tuple[pd.Timestamp,pd.Timestamp]]
-_convert_llm_result	app/parser/llm_cell_parser.py	/^def _convert_llm_result(result: dict[str, Any] | None) -> list[ParsedCell]:$/;"	f	typeref:typename:list[ParsedCell]
-_count_date_cells	app/parser/layout_detector.py	/^def _count_date_cells(row: pd.Series) -> int:$/;"	f	typeref:typename:int
-_count_date_ranges	app/parser/row_classifier.py	/^def _count_date_ranges(row: pd.Series) -> int:$/;"	f	typeref:typename:int
-_detect_year	app/parser/excel_parser.py	/^def _detect_year(df: pd.DataFrame, file_path: str) -> int:$/;"	f	typeref:typename:int
+_detect_year	parse_schedule.py	/^def _detect_year(df: pd.DataFrame, file_path: str) -> int:$/;"	f	typeref:typename:int
 _entries_to_dicts	app/app.py	/^def _entries_to_dicts($/;"	f	typeref:typename:list[dict]
-_extract_name	app/parser/excel_parser.py	/^def _extract_name(row: pd.Series, name_col: int) -> str:$/;"	f	typeref:typename:str
-_extract_pgy	app/parser/excel_parser.py	/^def _extract_pgy($/;"	f	typeref:typename:int|None
-_extract_vacations	app/parser/cell_parser.py	/^def _extract_vacations(text: str) -> list[VacationInfo]:$/;"	f	typeref:typename:list[VacationInfo]
-_fallback_all	app/parser/llm_cell_parser.py	/^def _fallback_all($/;"	f	typeref:typename:dict[int,list[ParsedCell]]
-_get_example_file	test/test_parser.py	/^def _get_example_file(name):$/;"	f
 _group_by_pgy	app/app.py	/^def _group_by_pgy(entries: list[dict]) -> list[dict]:$/;"	f	typeref:typename:list[dict]
-_has_title_keyword	app/parser/row_classifier.py	/^def _has_title_keyword(row: pd.Series) -> bool:$/;"	f	typeref:typename:bool
-_is_blank_row	app/parser/row_classifier.py	/^def _is_blank_row(row: pd.Series) -> bool:$/;"	f	typeref:typename:bool
-_is_block_label_row	app/parser/row_classifier.py	/^def _is_block_label_row(row: pd.Series) -> bool:$/;"	f	typeref:typename:bool
-_is_compound	app/parser/cell_parser.py	/^def _is_compound(rotation: str) -> bool:$/;"	f	typeref:typename:bool
-_is_date_range	app/parser/layout_detector.py	/^def _is_date_range(val) -> bool:$/;"	f	typeref:typename:bool
-_is_pgy_header	app/parser/row_classifier.py	/^def _is_pgy_header(row: pd.Series) -> str | None:$/;"	f	typeref:typename:str|None
-_is_resident_row	app/parser/row_classifier.py	/^def _is_resident_row(row: pd.Series, name_col: int, pgy_col: int | None) -> bool:$/;"	f	typeref:typename:bool
-_is_vacation_annotation_row	app/parser/row_classifier.py	/^def _is_vacation_annotation_row($/;"	f	typeref:typename:bool
-_is_week_label_row	app/parser/row_classifier.py	/^def _is_week_label_row(row: pd.Series) -> bool:$/;"	f	typeref:typename:bool
 _make_engine	test/test_models.py	/^def _make_engine():$/;"	f
-_normalize_institution	app/parser/cell_parser.py	/^def _normalize_institution(raw: str) -> str:$/;"	f	typeref:typename:str
-_parse_dates_row	app/parser/excel_parser.py	/^def _parse_dates_row($/;"	f	typeref:typename:list[tuple[pd.Timestamp,pd.Timestamp]]
-_parse_llm_response	app/parser/llm_cell_parser.py	/^def _parse_llm_response($/;"	f	typeref:typename:list[dict[str,Any]]|None
-_parse_location	app/parser/cell_parser.py	/^def _parse_location(rotation: str) -> tuple[str, str | None]:$/;"	f	typeref:typename:tuple[str,str|None]
-_process_pending_batch	app/parser/llm_excel_parser.py	/^def _process_pending_batch($/;"	f	typeref:typename:None
-_snap_to_sunday	app/parser/excel_parser.py	/^def _snap_to_sunday(dt: pd.Timestamp) -> pd.Timestamp:$/;"	f	typeref:typename:pd.Timestamp
-_strip_annotations	app/parser/cell_parser.py	/^def _strip_annotations(text: str) -> str:$/;"	f	typeref:typename:str
-abbrev	app/models.py	/^    abbrev = Column(Text, primary_key=True)$/;"	v	class:RotationMap
+_strip_fences	parse_schedule.py	/^def _strip_fences(text: str) -> str:$/;"	f	typeref:typename:str
 action	parse_excel.py	/^        action = input("(s)kip, (d)ate, (r)esident, (q)uit: ")$/;"	v
 app	app/app.py	/^app = FastAPI()$/;"	v
-approved_status	app/models.py	/^    approved_status = Column(Text, nullable=True)$/;"	v	class:Vacation
 args	parse_excel.py	/^    args = parser.parse_args()$/;"	v
-canonicalize_rotation	app/parser/rotation_map.py	/^def canonicalize_rotation(abbrev: str) -> str:$/;"	f	typeref:typename:str
-classify_row	app/parser/row_classifier.py	/^def classify_row($/;"	f	typeref:typename:tuple[str,str|None]
-clean_resident_name	app/parser/cell_parser.py	/^def clean_resident_name(raw_name: str) -> str:$/;"	f	typeref:typename:str
+call_claude	parse_schedule.py	/^def call_claude($/;"	f	typeref:typename:dict
 conn	parse_excel.py	/^    conn = sqlalchemy.create_engine(f"sqlite:\/\/\/{output}", echo=False)$/;"	v
-covered_by	app/models.py	/^    covered_by = Column(Text, nullable=True)$/;"	v	class:Vacation
 current_date_data	parse_excel.py	/^            current_date_data = handle_date_row(row, year)$/;"	v
 current_date_data	parse_excel.py	/^    current_date_data = None$/;"	v
 date	app/templates/date_picker.html	/^                    <input class="form-control" id="date" name="date" type="date" required>$/;"	I
 date_page	app/app.py	/^async def date_page($/;"	f
 date_picker	app/app.py	/^def date_picker(request: Request):$/;"	f
-detect_all_sections	app/parser/layout_detector.py	/^def detect_all_sections(df: pd.DataFrame) -> list[tuple[int, LayoutInfo]]:$/;"	f	typeref:typename:list[tuple[int,LayoutInfo]]
-detect_layout	app/parser/layout_detector.py	/^def detect_layout(df: pd.DataFrame, start_row: int = 0) -> LayoutInfo | None:$/;"	f	typeref:typename:LayoutInfo|None
 df	parse_excel.py	/^    df = pd.read_excel(file_path)$/;"	v
 end_date	app/models.py	/^    end_date = Column(Text, nullable=False)$/;"	v	class:Schedule
 engine	app/database.py	/^engine = create_engine(DATABASE_URL, echo=False)$/;"	v
-expand_rotation	app/parser/rotation_map.py	/^def expand_rotation(abbrev: str) -> str:$/;"	f	typeref:typename:str
-extract_vacations	app/parser/excel_parser.py	/^def extract_vacations(rows: list[ScheduleRow]) -> list[dict]:$/;"	f	typeref:typename:list[dict]
+excel_to_csv	parse_schedule.py	/^def excel_to_csv(file_path: str) -> tuple[str, int]:$/;"	f	typeref:typename:tuple[str,int]
 file_path	parse_excel.py	/^    file_path = args.file$/;"	v
 final_table_list	parse_excel.py	/^    final_table_list = []$/;"	v
-find_dates_label_col	app/parser/layout_detector.py	/^def find_dates_label_col(row: pd.Series) -> int | None:$/;"	f	typeref:typename:int|None
-full_name	app/models.py	/^    full_name = Column(Text, nullable=False)$/;"	v	class:RotationMap
 get_all_resident_names	app/app.py	/^def get_all_resident_names() -> list[dict]:$/;"	f	typeref:typename:list[dict]
 get_all_rotation_names	app/app.py	/^def get_all_rotation_names() -> list[dict]:$/;"	f	typeref:typename:list[dict]
-get_backend_info	app/parser/llm_cell_parser.py	/^def get_backend_info() -> dict[str, str]:$/;"	f	typeref:typename:dict[str,str]
-get_rotation_map_entries	app/parser/excel_parser.py	/^def get_rotation_map_entries(rows: list[ScheduleRow]) -> list[dict]:$/;"	f	typeref:typename:list[dict]
 get_schedule_entries	app/app.py	/^def get_schedule_entries($/;"	f	typeref:typename:list[dict]
 get_session	app/app.py	/^def get_session() -> Session:$/;"	f	typeref:typename:Session
 get_session	app/database.py	/^def get_session() -> Session:$/;"	f	typeref:typename:Session
 handle_date_row	parse_excel.py	/^def handle_date_row(row: pd.Series, year: int) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
 handle_resident_row	parse_excel.py	/^def handle_resident_row(row: pd.Series, dates: pd.DataFrame):$/;"	f
 home	app/app.py	/^async def home(request: Request, include_visiting: bool = True):$/;"	f
+id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Resident
 id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Schedule
 id	app/models.py	/^    id = Column(Integer, primary_key=True, autoincrement=True)$/;"	v	class:Vacation
 init_db	app/database.py	/^def init_db(db_engine=None):$/;"	f
-is_common	app/models.py	/^    is_common = Column(Integer, default=0)$/;"	v	class:RotationMap
-is_common_rotation	app/parser/rotation_map.py	/^def is_common_rotation(full_name: str) -> bool:$/;"	f	typeref:typename:bool
-is_full_vacation	app/parser/cell_parser.py	/^    is_full_vacation: bool = False  # True if cell is just "VACATION"$/;"	v	class:ParsedCell	typeref:typename:bool
-is_visiting	app/models.py	/^    is_visiting = Column(Integer, default=0)$/;"	v	class:Schedule
-is_visiting	app/parser/cell_parser.py	/^    is_visiting: bool = True$/;"	v	class:VisitingInfo	typeref:typename:bool
-is_visiting	app/parser/excel_parser.py	/^    is_visiting: bool = False$/;"	v	class:ScheduleRow	typeref:typename:bool
+is_elective	app/models.py	/^    is_elective = Column(Integer, default=0)$/;"	v	class:Schedule
+is_visiting	app/models.py	/^    is_visiting = Column(Integer, default=0)$/;"	v	class:Resident
 location	app/models.py	/^    location = Column(Text, nullable=True)$/;"	v	class:Schedule
-logger	app/parser/excel_parser.py	/^logger = logging.getLogger(__name__)$/;"	v
-logger	app/parser/llm_cell_parser.py	/^logger = logging.getLogger(__name__)$/;"	v
-logger	app/parser/llm_excel_parser.py	/^logger = logging.getLogger(__name__)$/;"	v
-main	app/parser/cli.py	/^def main(argv: list[str] | None = None) -> None:$/;"	f	typeref:typename:None
-name	app/models.py	/^    name = Column(Text, nullable=False)$/;"	v	class:Schedule
+logger	parse_schedule.py	/^logger = logging.getLogger(__name__)$/;"	v
+main	parse_schedule.py	/^def main() -> None:$/;"	f	typeref:typename:None
+name	app/models.py	/^    name = Column(Text, nullable=False)$/;"	v	class:Resident
 navbarNav	app/templates/base.html	/^        <div class="collapse navbar-collapse" id="navbarNav">$/;"	I
 output	parse_excel.py	/^    output = args.output$/;"	v
 pane-{{ group.pgy }}	app/templates/home.html	/^                     id="pane-{{ group.pgy }}"$/;"	I
-parse_date	app/parser/excel_parser.py	/^def parse_date(s: str, year: int) -> pd.Timestamp:$/;"	f	typeref:typename:pd.Timestamp
 parse_date	parse_excel.py	/^def parse_date(s: str, year: int) -> pd.Timestamp:$/;"	f	typeref:typename:pd.Timestamp
-parse_date_range	app/parser/excel_parser.py	/^def parse_date_range(s: str, year: int) -> tuple[pd.Timestamp, pd.Timestamp]:$/;"	f	typeref:typename:tuple[pd.Timestamp,pd.Timestamp]
 parse_date_range	parse_excel.py	/^def parse_date_range(s: str, year: int) -> Tuple[pd.Timestamp, pd.Timestamp]:$/;"	f	typeref:typename:Tuple[pd.Timestamp,pd.Timestamp]
-parse_excel	app/parser/excel_parser.py	/^def parse_excel($/;"	f	typeref:typename:tuple[list[ScheduleRow],int]
-parse_excel_llm	app/parser/llm_excel_parser.py	/^def parse_excel_llm($/;"	f	typeref:typename:tuple[list[ScheduleRow],int]
-parse_rotation_cell	app/parser/cell_parser.py	/^def parse_rotation_cell($/;"	f	typeref:typename:list[ParsedCell]
-parse_rotation_cell_llm	app/parser/llm_cell_parser.py	/^def parse_rotation_cell_llm($/;"	f	typeref:typename:list[ParsedCell]
-parse_rotation_cells_llm_batch	app/parser/llm_cell_parser.py	/^def parse_rotation_cells_llm_batch($/;"	f	typeref:typename:dict[int,list[ParsedCell]]
-parse_vacation_annotation_row	app/parser/cell_parser.py	/^def parse_vacation_annotation_row($/;"	f	typeref:typename:dict[int,list[VacationInfo]]
-parse_visiting_name	app/parser/cell_parser.py	/^def parse_visiting_name(raw_name: str) -> VisitingInfo | None:$/;"	f	typeref:typename:VisitingInfo|None
 parser	parse_excel.py	/^    parser = argparse.ArgumentParser($/;"	v
 pd	app/app.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	app/parser/cell_parser.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	app/parser/excel_parser.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	app/parser/layout_detector.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	app/parser/llm_excel_parser.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	app/parser/row_classifier.py	/^import pandas as pd$/;"	I	nameref:module:pandas
 pd	parse_excel.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pd	test/test_parser.py	/^import pandas as pd$/;"	I	nameref:module:pandas
-pgy	app/models.py	/^    pgy = Column(Integer, nullable=False)$/;"	v	class:Schedule
+pd	parse_schedule.py	/^import pandas as pd$/;"	I	nameref:module:pandas
+pgy	app/models.py	/^    pgy = Column(Integer, nullable=False)$/;"	v	class:Resident
+program	app/models.py	/^    program = Column(Text, nullable=False, default="General Surgery")$/;"	v	class:Resident
+pytest cache directory	.pytest_cache/README.md	/^# pytest cache directory #$/;"	c
+resident	app/models.py	/^    resident = relationship("Resident", back_populates="schedule_entries")$/;"	v	class:Schedule
+resident	app/models.py	/^    resident = relationship("Resident", back_populates="vacations")$/;"	v	class:Vacation
 resident-select	app/templates/resident_picker.html	/^            <select id="resident-select" placeholder="Type a name to search...">$/;"	I
 resident_data	parse_excel.py	/^            resident_data = handle_resident_row(row, current_date_data)$/;"	v
+resident_id	app/models.py	/^    resident_id = Column(Integer, ForeignKey("resident.id"), nullable=False)$/;"	v	class:Schedule
+resident_id	app/models.py	/^    resident_id = Column(Integer, ForeignKey("resident.id"), nullable=False)$/;"	v	class:Vacation
 resident_picker	app/app.py	/^def resident_picker(request: Request):$/;"	f
 resident_schedule	app/app.py	/^def resident_schedule($/;"	f
-resolve_vacation_dates	app/parser/excel_parser.py	/^def resolve_vacation_dates(rows: list[ScheduleRow], year: int) -> None:$/;"	f	typeref:typename:None
 result	parse_excel.py	/^    result = pd.concat(final_table_list)$/;"	v
 rotation	app/models.py	/^    rotation = Column(Text, nullable=False)$/;"	v	class:Schedule
 rotation-select	app/templates/rotation_picker.html	/^            <select id="rotation-select" placeholder="Type to search...">$/;"	I
-rotation_full	app/models.py	/^    rotation_full = Column(Text, nullable=False)$/;"	v	class:Schedule
 rotation_picker	app/app.py	/^def rotation_picker(request: Request):$/;"	f
 rotation_schedule	app/app.py	/^def rotation_schedule($/;"	f
-schedule_entry	app/models.py	/^    schedule_entry = relationship("Schedule", back_populates="vacations")$/;"	v	class:Vacation
-schedule_id	app/models.py	/^    schedule_id = Column(Integer, ForeignKey("schedule.id"), nullable=False)$/;"	v	class:Vacation
-schedule_rows_to_dataframe	app/parser/excel_parser.py	/^def schedule_rows_to_dataframe(rows: list[ScheduleRow]) -> pd.DataFrame:$/;"	f	typeref:typename:pd.DataFrame
+schedule_entries	app/models.py	/^    schedule_entries = relationship("Schedule", back_populates="resident")$/;"	v	class:Resident
 start_date	app/models.py	/^    start_date = Column(Text, nullable=False)$/;"	v	class:Schedule
 tab-{{ group.pgy }}	app/templates/home.html	/^                            id="tab-{{ group.pgy }}"$/;"	I
 templates	app/app.py	/^templates = Jinja2Templates(directory="app\/templates")$/;"	v
 test_app	test/test_app.py	/^def test_app():$/;"	f
-test_blank_row	test/test_parser.py	/^    def test_blank_row(self):$/;"	m	class:TestRowClassification
-test_block_label_row	test/test_parser.py	/^    def test_block_label_row(self):$/;"	m	class:TestRowClassification
-test_compound_rotation_not_split	test/test_parser.py	/^    def test_compound_rotation_not_split(self):$/;"	m	class:TestCellParser
-test_conference_extraction	test/test_parser.py	/^    def test_conference_extraction(self):$/;"	m	class:TestCellParser
-test_dash_pattern	test/test_parser.py	/^    def test_dash_pattern(self):$/;"	m	class:TestVisitingName
-test_date_row	test/test_parser.py	/^    def test_date_row(self):$/;"	m	class:TestRowClassification
-test_detect_dates_row	test/test_parser.py	/^    def test_detect_dates_row(self):$/;"	m	class:TestLayoutDetection
-test_detect_without_dates_label	test/test_parser.py	/^    def test_detect_without_dates_label(self):$/;"	m	class:TestLayoutDetection
-test_east_gs	test/test_parser.py	/^    def test_east_gs(self):$/;"	m	class:TestCellParser
-test_east_location	test/test_parser.py	/^    def test_east_location(self):$/;"	m	class:TestCellParser
-test_empty_cell	test/test_parser.py	/^    def test_empty_cell(self):$/;"	m	class:TestCellParser
-test_expand_known_abbrev	test/test_parser.py	/^    def test_expand_known_abbrev(self):$/;"	m	class:TestRotationMap
-test_expand_unknown_abbrev	test/test_parser.py	/^    def test_expand_unknown_abbrev(self):$/;"	m	class:TestRotationMap
-test_full_vacation	test/test_parser.py	/^    def test_full_vacation(self):$/;"	m	class:TestCellParser
 test_insert_and_query_schedule	test/test_models.py	/^def test_insert_and_query_schedule():$/;"	f
-test_is_common	test/test_parser.py	/^    def test_is_common(self):$/;"	m	class:TestRotationMap
-test_nan_cell	test/test_parser.py	/^    def test_nan_cell(self):$/;"	m	class:TestCellParser
-test_no_duplicate_dates_per_resident	test/test_parser.py	/^    def test_no_duplicate_dates_per_resident(self):$/;"	m	class:TestExcelIntegration
-test_not_visiting	test/test_parser.py	/^    def test_not_visiting(self):$/;"	m	class:TestVisitingName
-test_paren_pattern	test/test_parser.py	/^    def test_paren_pattern(self):$/;"	m	class:TestVisitingName
-test_parse_2022_2023	test/test_parser.py	/^    def test_parse_2022_2023(self):$/;"	m	class:TestExcelIntegration
-test_parse_2023_2024	test/test_parser.py	/^    def test_parse_2023_2024(self):$/;"	m	class:TestExcelIntegration
-test_parse_2024_2025	test/test_parser.py	/^    def test_parse_2024_2025(self):$/;"	m	class:TestExcelIntegration
-test_parse_2025_2026	test/test_parser.py	/^    def test_parse_2025_2026(self):$/;"	m	class:TestExcelIntegration
-test_parse_date_fall	test/test_parser.py	/^    def test_parse_date_fall(self):$/;"	m	class:TestDateParsing
-test_parse_date_range	test/test_parser.py	/^    def test_parse_date_range(self):$/;"	m	class:TestDateParsing
-test_parse_date_range_cross_year	test/test_parser.py	/^    def test_parse_date_range_cross_year(self):$/;"	m	class:TestDateParsing
-test_parse_date_spring	test/test_parser.py	/^    def test_parse_date_spring(self):$/;"	m	class:TestDateParsing
-test_pgy_header	test/test_parser.py	/^    def test_pgy_header(self):$/;"	m	class:TestRowClassification
-test_resident_row	test/test_parser.py	/^    def test_resident_row(self):$/;"	m	class:TestRowClassification
-test_riverside	test/test_parser.py	/^    def test_riverside(self):$/;"	m	class:TestVisitingName
-test_rotation_map	test/test_models.py	/^def test_rotation_map():$/;"	f
-test_rotator_pattern	test/test_parser.py	/^    def test_rotator_pattern(self):$/;"	m	class:TestVisitingName
 test_schema_creation	test/test_models.py	/^def test_schema_creation():$/;"	f
-test_simple_rotation	test/test_parser.py	/^    def test_simple_rotation(self):$/;"	m	class:TestCellParser
-test_split_rotation	test/test_parser.py	/^    def test_split_rotation(self):$/;"	m	class:TestCellParser
-test_split_rotations_produce_two_entries	test/test_parser.py	/^    def test_split_rotations_produce_two_entries(self):$/;"	m	class:TestExcelIntegration
-test_vacation_extraction	test/test_parser.py	/^    def test_vacation_extraction(self):$/;"	m	class:TestCellParser
 test_vacation_relationship	test/test_models.py	/^def test_vacation_relationship():$/;"	f
 test_visiting_resident	test/test_models.py	/^def test_visiting_resident():$/;"	f
 vac_end	app/models.py	/^    vac_end = Column(Text, nullable=False)$/;"	v	class:Vacation
 vac_start	app/models.py	/^    vac_start = Column(Text, nullable=False)$/;"	v	class:Vacation
 vac_type	app/models.py	/^    vac_type = Column(Text, default="vacation")$/;"	v	class:Vacation
-vac_type	app/parser/cell_parser.py	/^    vac_type: str = "vacation"  # "vacation" or "conference"$/;"	v	class:VacationInfo	typeref:typename:str
-vacations	app/models.py	/^    vacations = relationship("Vacation", back_populates="schedule_entry")$/;"	v	class:Schedule
-vacations	app/parser/cell_parser.py	/^    vacations: list[VacationInfo] = field(default_factory=list)$/;"	v	class:ParsedCell	typeref:typename:list[VacationInfo]
-vacations	app/parser/excel_parser.py	/^    vacations: list[VacationInfo] = field(default_factory=list)$/;"	v	class:ScheduleRow	typeref:typename:list[VacationInfo]
+vacations	app/models.py	/^    vacations = relationship("Vacation", back_populates="resident")$/;"	v	class:Resident
 visiting-toggle	app/templates/home.html	/^            <input class="form-check-input" type="checkbox" id="visiting-toggle" {% if include_v/;"	I
-visiting_institution	app/models.py	/^    visiting_institution = Column(Text, nullable=True)$/;"	v	class:Schedule
+visiting_institution	app/models.py	/^    visiting_institution = Column(Text, nullable=True)$/;"	v	class:Resident
+write_to_db	parse_schedule.py	/^def write_to_db(data: dict, db_path: str) -> None:$/;"	f	typeref:typename:None
 year	parse_excel.py	/^        year = pd.Timestamp.today().year$/;"	v
 year	parse_excel.py	/^    year = args.year$/;"	v
 {{ header_text }}	app/templates/home.html	/^        <h1 class="display-6">{{ header_text }}<\/h1>$/;"	h
