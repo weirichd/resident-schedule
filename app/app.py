@@ -142,6 +142,7 @@ def _entries_to_dicts(
             {
                 "pgy": r.pgy,
                 "name": r.name,
+                "program": r.program,
                 "rotation": rotation_display,
                 "start_date": start.strftime("%B %d"),
                 "end_date": end.strftime("%B %d"),

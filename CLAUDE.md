@@ -55,7 +55,7 @@ docker run --rm -p 8000:8000 resident-schedule
 
 **Routes:** `/` (today's schedule), `/date/` (by date), `/rotation/` (by rotation), `/resident/` (by name). Each has a corresponding `_picker` route for selection UI. All schedule endpoints accept `?include_visiting=true|false`.
 
-**Templates:** Bootstrap 3 with jQuery. Schedule data displayed in tabs by PGY level.
+**Templates:** Bootstrap 5 with Jinja2. Schedule data displayed in tabs by PGY level.
 
 ## Deployment
 
