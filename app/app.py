@@ -144,6 +144,7 @@ def _entries_to_dicts(
                 "name": r.name,
                 "program": r.program,
                 "rotation": rotation_display,
+                "rotation_raw": e.rotation,
                 "start_date": start.strftime("%B %d"),
                 "end_date": end.strftime("%B %d"),
                 "vacations": vacations,
@@ -246,6 +247,83 @@ def resident_schedule(
             "groups": groups,
             "header_text": f"Schedule for Resident: {name}",
             "include_visiting": True,
+        },
+    )
+
+
+def get_coming_next_entries(
+    rotation: str, after_date: str, include_visiting: bool = True
+) -> list[dict]:
+    """Get the next block of schedule entries for a rotation after the given date.
+
+    Finds the earliest start_date for this rotation that begins after after_date,
+    then returns all entries starting on that date.
+    """
+    session = get_session()
+    try:
+        # Find the earliest start_date after the given date for this rotation
+        next_start = session.query(func.min(Schedule.start_date)).filter(
+            Schedule.rotation == rotation,
+            func.date(Schedule.start_date) > func.date(after_date),
+        )
+        if not include_visiting:
+            next_start = next_start.join(Resident).filter(Resident.is_visiting == 0)
+        next_start_date = next_start.scalar()
+
+        if not next_start_date:
+            return []
+
+        # Get all entries for that rotation starting on that date
+        q = (
+            session.query(Schedule)
+            .join(Resident)
+            .options(joinedload(Schedule.resident).joinedload(Resident.vacations))
+            .filter(
+                Schedule.rotation == rotation,
+                func.date(Schedule.start_date) == func.date(next_start_date),
+            )
+            .order_by(Schedule.start_date)
+        )
+        if not include_visiting:
+            q = q.filter(Resident.is_visiting == 0)
+
+        entries = q.all()
+        return _entries_to_dicts(entries, query_date=next_start_date)
+    finally:
+        session.close()
+
+
+@app.get("/rotation/{rotation_name}/", response_class=HTMLResponse)
+@app.get("/rotation/{rotation_name}/{date}", response_class=HTMLResponse)
+def rotation_detail(
+    request: Request,
+    rotation_name: str,
+    date: str | None = None,
+    include_visiting: bool = True,
+):
+    if date is None:
+        date = pd.Timestamp.now().strftime("%Y-%m-%d")
+
+    entries = get_schedule_entries(date=date, include_visiting=include_visiting)
+    current = [e for e in entries if e["rotation"].startswith(rotation_name)]
+    current_groups = _group_by_pgy(current) if current else []
+
+    coming_next = get_coming_next_entries(
+        rotation_name, date, include_visiting=include_visiting
+    )
+    coming_next_groups = _group_by_pgy(coming_next) if coming_next else []
+
+    display_date = pd.Timestamp(date).strftime("%B %d, %Y")
+
+    return templates.TemplateResponse(
+        "rotation_detail.html",
+        {
+            "request": request,
+            "rotation_name": rotation_name,
+            "display_date": display_date,
+            "current_groups": current_groups,
+            "coming_next_groups": coming_next_groups,
+            "include_visiting": include_visiting,
         },
     )
 

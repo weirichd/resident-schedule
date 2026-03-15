@@ -1,13 +1,11 @@
 # TODO
 
-## 1. Rotation Detail Page
+## 1. Rotation Page UX Cleanup
 
-Add a bookmarkable page for each rotation showing today's schedule and upcoming assignments.
+The rotation detail page (`/rotation/<name>/`) is implemented but needs end-user feedback to tighten up. Current issues:
 
-- **Routes:**
-  - `/rotation/<name>/` — today's residents on that rotation + "coming next" section
-  - `/rotation/<name>/<date>` — residents on that rotation for a specific date
-- **Scope:** Minor feature. Mostly new route + template work in `app/app.py`.
+- Two URL patterns for rotation views: `/rotation/?rotation=X` (all-time schedule) vs `/rotation/X/` (today + coming next). Decide if both are needed or consolidate.
+- Gather feedback on the detail page layout (current + coming next sections, tab grouping, etc.)
 
 ---
 
