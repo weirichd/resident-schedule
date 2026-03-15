@@ -7,6 +7,7 @@ and writes the parsed schedule entries into a SQLite database.
 import argparse
 import json
 import logging
+import os
 import re
 
 from dotenv import load_dotenv
@@ -295,10 +296,42 @@ def _strip_fences(text: str) -> str:
     return text
 
 
+def _state_file_path(input_file: str) -> str:
+    """Derive a deterministic state file path from the input file name."""
+    return input_file + ".parse_state.json"
+
+
+def _save_state(
+    state_path: str,
+    messages: list,
+    csv_text: str,
+    year: int,
+    model: str,
+) -> None:
+    """Save conversation state to a JSON file for later resumption."""
+    state = {
+        "messages": messages,
+        "csv_text": csv_text,
+        "year": year,
+        "model": model,
+    }
+    with open(state_path, "w") as f:
+        json.dump(state, f, indent=2)
+    logger.info("Saved conversation state to %s", state_path)
+
+
+def _load_state(state_path: str) -> dict:
+    """Load conversation state from a JSON file."""
+    with open(state_path) as f:
+        return json.load(f)
+
+
 def call_claude(
     csv_text: str,
     year: int,
     model: str = "claude-sonnet-4-20250514",
+    answers_file: str | None = None,
+    input_file: str | None = None,
 ) -> dict:
     """Send the CSV to Claude and parse the JSON response.
 
@@ -306,15 +339,61 @@ def call_claude(
     {"questions": [...]}, the user is prompted for answers and the
     conversation continues until Claude returns the final JSON.
 
+    When ``answers_file`` is provided, the function loads a previously
+    saved conversation state and resumes by sending the answers file
+    content as the user's response to Claude's questions.
+
     Args:
         csv_text: CSV string of the Excel schedule.
         year: Academic year start (e.g., 2025 for 2025-2026).
         model: Anthropic model to use.
+        answers_file: Path to a file containing answers to Claude's
+            questions from a previous run. When provided, the saved
+            conversation state is loaded and resumed.
+        input_file: Path to the original input Excel file, used to
+            derive the state file path.
 
     Returns:
         Dict with "residents", "rotations", and "vacations" keys.
     """
     client = anthropic.Anthropic()
+
+    state_path = _state_file_path(input_file) if input_file else None
+
+    # If resuming from a saved state with answers
+    if answers_file:
+        if not state_path or not os.path.exists(state_path):
+            raise FileNotFoundError(
+                f"No saved conversation state found at {state_path}. "
+                "Run without --answers first to start a new parse."
+            )
+
+        state = _load_state(state_path)
+        messages = state["messages"]
+        csv_text = state["csv_text"]
+        year = state["year"]
+        model = state["model"]
+
+        with open(answers_file) as f:
+            answers_content = f.read().strip()
+
+        # Append the answers as the user response
+        messages.append({"role": "user", "content": answers_content})
+        logger.info(
+            "Resumed conversation from %s with answers from %s",
+            state_path,
+            answers_file,
+        )
+    else:
+        messages = [
+            {
+                "role": "user",
+                "content": (
+                    "Here is the rotation schedule as CSV. "
+                    "Parse it and return JSON.\n\n" + csv_text
+                ),
+            }
+        ]
 
     system_prompt = SYSTEM_PROMPT.format(
         valid_rotations=VALID_ROTATIONS,
@@ -322,16 +401,6 @@ def call_claude(
         academic_year=year,
         next_year=year + 1,
     )
-
-    messages = [
-        {
-            "role": "user",
-            "content": (
-                "Here is the rotation schedule as CSV. "
-                "Parse it and return JSON.\n\n" + csv_text
-            ),
-        }
-    ]
 
     while True:
         logger.info("Calling Claude (%s)...", model)
@@ -355,10 +424,22 @@ def call_claude(
             for i, q in enumerate(questions, 1):
                 print(f"  {i}. {q}")
             print()
+
+            # Add the assistant's question message to the conversation
+            messages.append({"role": "assistant", "content": response_text})
+
+            # Save state so the user can resume later with --answers
+            if state_path:
+                _save_state(state_path, messages, csv_text, year, model)
+                print(
+                    f"Conversation state saved to {state_path}\n"
+                    f"To resume later, write your answers to a file and run:\n"
+                    f"  python parse_schedule.py --file {input_file} "
+                    f"--output <db> --answers <answers_file>\n"
+                )
+
             answers = input("Your answers (or 'skip' to proceed without answering): ")
 
-            # Add the exchange to the conversation
-            messages.append({"role": "assistant", "content": response_text})
             if answers.strip().lower() == "skip":
                 messages.append(
                     {
@@ -379,6 +460,11 @@ def call_claude(
         for key in ("residents", "rotations", "vacations"):
             if key not in parsed:
                 raise ValueError(f"Missing required key: {key}")
+
+        # Clean up state file on successful completion
+        if state_path and os.path.exists(state_path):
+            os.remove(state_path)
+            logger.info("Removed state file %s", state_path)
 
         return parsed
 
@@ -497,6 +583,14 @@ def main() -> None:
         action="store_true",
         help="Parse and display results without writing to database",
     )
+    parser.add_argument(
+        "--answers",
+        type=str,
+        help=(
+            "Path to a file containing answers to Claude's questions "
+            "from a previous interrupted run. Resumes the saved conversation."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -512,7 +606,13 @@ def main() -> None:
     logger.info("CSV size: %d chars", len(csv_text))
 
     # Step 2: Call Claude
-    data = call_claude(csv_text, year, model=args.model)
+    data = call_claude(
+        csv_text,
+        year,
+        model=args.model,
+        answers_file=args.answers,
+        input_file=args.file,
+    )
 
     residents = data["residents"]
     rotations = data["rotations"]
