@@ -7,9 +7,8 @@ import sys
 import sqlalchemy
 from sqlalchemy.orm import Session
 
-from app.models import Base, RotationMap, Schedule, Vacation
+from app.models import Base, Schedule, Vacation
 from app.parser.excel_parser import (
-    get_rotation_map_entries,
     parse_excel,
     resolve_vacation_dates,
 )
@@ -150,19 +149,8 @@ def main(argv: list[str] | None = None) -> None:
                     vac_start=v.vac_start,
                     vac_end=v.vac_end,
                     vac_type=v.vac_type,
-                    approved_status=v.approved_status,
-                    covered_by=v.covered_by,
                 )
                 session.add(vac)
-
-        # Insert rotation map
-        for entry in get_rotation_map_entries(rows):
-            rm = RotationMap(
-                abbrev=entry["abbrev"],
-                full_name=entry["full_name"],
-                is_common=entry["is_common"],
-            )
-            session.add(rm)
 
         session.commit()
         logger.info("Database written successfully!")

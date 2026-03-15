@@ -16,6 +16,7 @@ pandas = "^2.2.2"
 sqlalchemy = "^2.0.30"
 anthropic = "^0.84.0"
 httpx = "^0.28.1"
+pysqlite3-binary = "^0.5.4.post2"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=24"

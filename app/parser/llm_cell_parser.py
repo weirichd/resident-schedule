@@ -224,7 +224,6 @@ def _convert_llm_result(result: dict[str, Any] | None) -> list[ParsedCell]:
                 vac_start=vac.get("start", ""),
                 vac_end=vac.get("end", ""),
                 vac_type=vac_type,
-                approved_status=vac.get("approved"),
             )
         )
 

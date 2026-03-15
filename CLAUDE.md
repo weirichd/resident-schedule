@@ -40,17 +40,16 @@ docker run --rm -p 8000:8000 resident-schedule
 
 **Data flow:** Excel → `app/parser/` → SQLite (`resident_schedule.db`) → FastAPI (`app/app.py`) → Jinja2 templates
 
-**Database schema:** Three tables defined in `app/models.py` using SQLAlchemy ORM:
-- `schedule` — rotation assignments (name, pgy, rotation, rotation_full, location, is_visiting, visiting_institution)
+**Database schema:** Two tables defined in `app/models.py` using SQLAlchemy ORM:
+- `schedule` — rotation assignments (name, pgy, rotation, rotation_full, location, is_visiting, visiting_institution, is_general_surgery)
 - `vacation` — vacation/conference annotations linked to schedule entries via schedule_id FK
-- `rotation_map` — abbreviation→full name mappings with common/uncommon classification
 
 **app/database.py:** Engine and session factory setup.
 
 **app/app.py:** Single-file FastAPI app. All routes and ORM query functions live here. Key query functions: `get_data_from_date()`, `get_rotation_schedule()`, `get_resident_schedule()`. DataFrames are formatted to HTML via `prepare_table()`. Supports `include_visiting` filter on schedule endpoints.
 
 **Parser module (`app/parser/`):**
-- `rotation_map.py` — abbreviation mappings, compound rotation set, common/uncommon classification
+- `rotation_map.py` — abbreviation mappings, compound rotation set
 - `layout_detector.py` — auto-detect column positions (name, PGY, rotation start) from Excel files
 - `row_classifier.py` — classify rows as date, resident, vacation annotation, section header, or skip
 - `cell_parser.py` — parse vacation annotations, "/" split rotations, East location, visiting residents

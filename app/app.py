@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.database import SessionLocal
-from app.models import Schedule, RotationMap
+from app.models import Schedule
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -68,18 +68,13 @@ def get_all_rotation_names() -> list[dict]:
             .all()
         )
 
-        # Join with rotation_map for is_common
-        rot_map = {r.abbrev: r for r in session.query(RotationMap).all()}
-
         result = []
         for rot, rot_full in rotations:
-            is_common = rot_map[rot].is_common if rot in rot_map else 0
             result.append(
-                {"rotation": rot, "rotation_full": rot_full, "is_common": is_common}
+                {"rotation": rot, "rotation_full": rot_full}
             )
 
-        # Sort: common first, then alphabetical by full name
-        result.sort(key=lambda x: (-x["is_common"], x["rotation_full"]))
+        result.sort(key=lambda x: x["rotation_full"])
         return result
     finally:
         session.close()
@@ -133,8 +128,6 @@ def _entries_to_dicts(
                 "type": v.vac_type,
                 "start": v.vac_start,
                 "end": v.vac_end,
-                "status": v.approved_status,
-                "covered_by": v.covered_by,
             }
 
             # Format display dates

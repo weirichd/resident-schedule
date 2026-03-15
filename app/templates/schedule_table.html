@@ -33,14 +33,6 @@
                             Vac: {{ vac.start_display }}&ndash;{{ vac.end_display }}
                         </span>
                     {% endif %}
-                    {% if vac.status %}
-                        <span class="badge {% if vac.status == 'A' %}bg-success{% else %}bg-warning text-dark{% endif %} vacation-badge">
-                            {{ "Approved" if vac.status == "A" else "Pending" }}
-                        </span>
-                    {% endif %}
-                    {% if vac.covered_by %}
-                        <span class="coverage-text">covered by {{ vac.covered_by }}</span>
-                    {% endif %}
                     {% if not loop.last %}<br>{% endif %}
                 {% endfor %}
             </td>

@@ -19,7 +19,6 @@ from app.parser.layout_detector import (
     LayoutInfo,
     detect_layout,
 )
-from app.parser.rotation_map import is_common_rotation
 from app.parser.row_classifier import RowType, classify_row
 
 logger = logging.getLogger(__name__)
@@ -490,27 +489,8 @@ def extract_vacations(rows: list[ScheduleRow]) -> list[dict]:
                     "vac_start": v.vac_start,
                     "vac_end": v.vac_end,
                     "vac_type": v.vac_type,
-                    "approved_status": v.approved_status,
-                    "covered_by": v.covered_by,
                 }
             )
     return vacations
 
 
-def get_rotation_map_entries(rows: list[ScheduleRow]) -> list[dict]:
-    """Build rotation_map entries from parsed data."""
-    seen: dict[str, str] = {}
-    for r in rows:
-        if r.rotation not in seen and r.rotation != "VACATION":
-            seen[r.rotation] = r.rotation_full
-
-    entries = []
-    for abbrev, full_name in sorted(seen.items()):
-        entries.append(
-            {
-                "abbrev": abbrev,
-                "full_name": full_name,
-                "is_common": 1 if is_common_rotation(full_name) else 0,
-            }
-        )
-    return entries

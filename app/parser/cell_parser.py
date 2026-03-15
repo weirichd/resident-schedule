@@ -83,8 +83,6 @@ class VacationInfo:
     vac_start: str  # "M/D" format
     vac_end: str  # "M/D" format
     vac_type: str = "vacation"  # "vacation" or "conference"
-    approved_status: str | None = None  # "A", "P", or None
-    covered_by: str | None = None
 
 
 @dataclass
@@ -207,7 +205,6 @@ def _extract_vacations(text: str) -> list[VacationInfo]:
                 vac_start=m.group(1),
                 vac_end=m.group(2),
                 vac_type="vacation",
-                approved_status=m.group(3),
             )
         )
 
@@ -217,7 +214,6 @@ def _extract_vacations(text: str) -> list[VacationInfo]:
             vac_start=m.group(1),
             vac_end=m.group(2),
             vac_type="vacation",
-            approved_status=m.group(3),
         )
         # Avoid duplicates from Vac/Conf
         if not any(
@@ -231,28 +227,12 @@ def _extract_vacations(text: str) -> list[VacationInfo]:
             vac_start=m.group(1),
             vac_end=m.group(2),
             vac_type="conference",
-            approved_status=m.group(3),
         )
         if not any(
             v.vac_start == conf.vac_start and v.vac_end == conf.vac_end
             for v in vacations
         ):
             vacations.append(conf)
-
-    # Extract coverage info
-    cov_match = COVERAGE_PATTERN.search(text)
-    if cov_match and vacations:
-        vacations[-1].covered_by = cov_match.group(1).strip()
-
-    # If there's a standalone approval not already captured
-    if vacations:
-        for vac in vacations:
-            if vac.approved_status is None:
-                # Check for approval after the date range in the text
-                remaining = text[text.find(vac.vac_end) + len(vac.vac_end) :]
-                app = APPROVAL_PATTERN.search(remaining)
-                if app:
-                    vac.approved_status = app.group(1)
 
     return vacations
 

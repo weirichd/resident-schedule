@@ -52,7 +52,7 @@ class TestCellParser:
         assert len(cells[0].vacations) == 1
         assert cells[0].vacations[0].vac_start == "12/8"
         assert cells[0].vacations[0].vac_end == "12/14"
-        assert cells[0].vacations[0].approved_status == "A"
+        assert cells[0].vacations[0].vac_type == "vacation"
 
     def test_conference_extraction(self):
         cells = parse_rotation_cell("ACS [Conf: 9/4-9/5] (A)")
