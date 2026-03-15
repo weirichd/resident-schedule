@@ -296,6 +296,35 @@ def _detect_year(df: pd.DataFrame, file_path: str) -> int:
     return 2025
 
 
+# Per-million-token pricing (input, output) by model prefix
+_MODEL_PRICING: dict[str, tuple[float, float]] = {
+    "claude-sonnet": (3.0, 15.0),
+    "claude-opus": (15.0, 75.0),
+    "claude-haiku": (0.80, 4.0),
+}
+
+
+def _log_usage(model: str, input_tokens: int, output_tokens: int) -> None:
+    """Log token usage and estimated cost."""
+    logger.info(
+        "Token usage: %d input + %d output = %d total",
+        input_tokens,
+        output_tokens,
+        input_tokens + output_tokens,
+    )
+
+    # Find matching pricing by model prefix
+    for prefix, (input_price, output_price) in _MODEL_PRICING.items():
+        if prefix in model:
+            cost = (input_tokens / 1_000_000 * input_price) + (
+                output_tokens / 1_000_000 * output_price
+            )
+            logger.info("Estimated cost: $%.4f", cost)
+            return
+
+    logger.info("Cost estimate unavailable for model %s", model)
+
+
 def _strip_fences(text: str) -> str:
     """Remove markdown code fences from a response."""
     text = text.strip()
@@ -411,6 +440,9 @@ def call_claude(
         next_year=year + 1,
     )
 
+    total_input_tokens = 0
+    total_output_tokens = 0
+
     while True:
         logger.info("Calling Claude (%s)...", model)
 
@@ -420,6 +452,9 @@ def call_claude(
             system=system_prompt,
             messages=messages,
         )
+
+        total_input_tokens += message.usage.input_tokens
+        total_output_tokens += message.usage.output_tokens
 
         response_text = message.content[0].text
         logger.debug("Raw response length: %d chars", len(response_text))
@@ -474,6 +509,9 @@ def call_claude(
         if state_path and os.path.exists(state_path):
             os.remove(state_path)
             logger.info("Removed state file %s", state_path)
+
+        # Log token usage and estimated cost
+        _log_usage(model, total_input_tokens, total_output_tokens)
 
         return parsed
 
