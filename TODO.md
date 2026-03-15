@@ -42,17 +42,7 @@ A web form where residents can check whether a proposed vacation is allowed unde
 
 ---
 
-## 3. Parser: Resume Interrupted Conversations
-
-Allow resuming a parse session that was stopped (e.g., Claude asked a question the user couldn't answer immediately).
-
-- Add `--answers <file.md>` CLI arg to `parse_schedule.py`
-- The answers file contains responses to questions Claude asked in a previous run
-- Enables coming back later with answers without re-running the entire parse from scratch
-
----
-
-## 4. Unique Resident IDs and Name Flags
+## 3. Unique Resident IDs and Name Flags
 
 Residents should get a unique ID in the DB so that generic names (e.g., "Prelim", "Vascular", "PLASTICS") can be distinguished behind the scenes.
 
@@ -62,7 +52,7 @@ Residents should get a unique ID in the DB so that generic names (e.g., "Prelim"
 
 ---
 
-## 5. Parser Improvements (lower priority)
+## 4. Parser Improvements (lower priority)
 
 Issues noticed during initial parse that could be addressed in future iterations:
 
