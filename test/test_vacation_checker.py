@@ -4,10 +4,12 @@ from app.vacation_checker import (
     check_annual_allowance,
     check_back_to_back,
     check_blackout_periods,
+    check_block_length,
     check_call_pool_conflict,
     check_no_vacation_rotation,
     check_same_service_conflict,
     check_same_service_repeat,
+    check_start_day,
     check_transplant_block,
     check_vacation,
     count_weekdays,
@@ -87,6 +89,39 @@ class TestNormalizeRotation:
 # ---------------------------------------------------------------------------
 # Rule check tests
 # ---------------------------------------------------------------------------
+
+
+class TestBlockLength:
+    def test_exactly_seven_days(self):
+        # Mon Sep 7 to Sun Sep 13
+        result = check_block_length(date(2026, 9, 7), date(2026, 9, 13))
+        assert result.passed
+
+    def test_too_short(self):
+        result = check_block_length(date(2026, 9, 7), date(2026, 9, 11))
+        assert not result.passed
+
+    def test_too_long(self):
+        result = check_block_length(date(2026, 9, 7), date(2026, 9, 20))
+        assert not result.passed
+
+
+class TestStartDay:
+    def test_monday_start(self):
+        result = check_start_day(date(2026, 9, 7))  # Monday
+        assert result.passed
+
+    def test_saturday_start(self):
+        result = check_start_day(date(2026, 9, 5))  # Saturday
+        assert result.passed
+
+    def test_wednesday_start(self):
+        result = check_start_day(date(2026, 9, 9))  # Wednesday
+        assert not result.passed
+
+    def test_sunday_start(self):
+        result = check_start_day(date(2026, 9, 6))  # Sunday
+        assert not result.passed
 
 
 class TestBlackoutPeriods:
@@ -542,7 +577,7 @@ class TestCheckVacationOrchestrator:
         assert not result.exempt
 
     def test_all_rules_run(self):
-        """Verify all 8 rules are checked for a non-exempt resident."""
+        """Verify all 10 rules are checked for a non-exempt resident."""
         resident = {
             "id": 1,
             "name": "Test",
@@ -559,14 +594,15 @@ class TestCheckVacationOrchestrator:
                 "end_date": date(2026, 9, 30),
             }
         ]
+        # Mon Sep 7 to Sun Sep 13: valid 7-day block starting Monday
         result = check_vacation(
             resident=resident,
-            req_start=date(2026, 9, 8),
-            req_end=date(2026, 9, 12),
+            req_start=date(2026, 9, 7),
+            req_end=date(2026, 9, 13),
             resident_schedule=schedule,
             resident_vacations=[],
             all_schedules=schedule,
             all_vacations=[],
         )
-        assert len(result.results) == 8
+        assert len(result.results) == 10
         assert result.all_passed

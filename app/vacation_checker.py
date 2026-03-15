@@ -170,6 +170,47 @@ def _is_in_blackout(start: date, end: date, year: int) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+def check_block_length(req_start: date, req_end: date) -> RuleResult:
+    """Vacation blocks must be exactly 7 days."""
+    length = (req_end - req_start).days + 1
+    if length != 7:
+        return RuleResult(
+            rule_name="block_length",
+            display_name="Block Length (7 days)",
+            passed=False,
+            message=f"Vacation must be exactly 7 days, but requested {length} days.",
+        )
+    return RuleResult(
+        rule_name="block_length",
+        display_name="Block Length (7 days)",
+        passed=True,
+        message="Vacation is exactly 7 days.",
+    )
+
+
+def check_start_day(req_start: date) -> RuleResult:
+    """Vacation must start on a Monday (Mon-Sun) or Saturday (Sat-Fri)."""
+    day = req_start.weekday()  # 0=Mon, 5=Sat
+    if day not in (0, 5):
+        day_name = req_start.strftime("%A")
+        return RuleResult(
+            rule_name="start_day",
+            display_name="Start Day (Mon or Sat)",
+            passed=False,
+            message=(
+                f"Vacation starts on {day_name}. "
+                f"Must start on Monday (Mon-Sun) or Saturday (Sat-Fri)."
+            ),
+        )
+    pattern = "Mon-Sun" if day == 0 else "Sat-Fri"
+    return RuleResult(
+        rule_name="start_day",
+        display_name="Start Day (Mon or Sat)",
+        passed=True,
+        message=f"Vacation starts on {req_start.strftime('%A')} ({pattern}).",
+    )
+
+
 def check_blackout_periods(req_start: date, req_end: date) -> RuleResult:
     """No vacation during blackout periods."""
     ay_start, _ = get_academic_year_bounds(req_start)
@@ -596,6 +637,8 @@ def check_vacation(
         )
 
     results = [
+        check_block_length(req_start, req_end),
+        check_start_day(req_start),
         check_blackout_periods(req_start, req_end),
         check_no_vacation_rotation(resident_schedule, req_start, req_end),
         check_annual_allowance(resident_vacations, req_start, req_end),
