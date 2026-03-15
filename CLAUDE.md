@@ -32,11 +32,8 @@ poetry run python -m app.parser.cli --file <file> --output <db> --debug    # ver
 poetry run python -m app.parser.cli --file <file> --output <db> --dry-run  # parse without writing
 
 # Docker build and run
-./build.sh [tag]    # builds image, defaults to 'latest'
-./run_docker.sh     # runs on port 8000
-
-# Deploy (parse, test, build, push to Lightsail)
-./deploy.sh <excel_file.xlsx>
+docker build -t resident-schedule .
+docker run --rm -p 8000:8000 resident-schedule
 ```
 
 ## Architecture
@@ -63,6 +60,10 @@ poetry run python -m app.parser.cli --file <file> --output <db> --dry-run  # par
 **Routes:** `/` (today's schedule), `/date/` (by date), `/rotation/` (by rotation), `/resident/` (by name). Each has a corresponding `_picker` route for selection UI. All schedule endpoints accept `?include_visiting=true|false`.
 
 **Templates:** Bootstrap 3 with jQuery. Schedule data displayed in tabs by PGY level.
+
+## Deployment
+
+Deployed on **AWS Lightsail Containers** (us-east-2). DNS managed via GoDaddy for osuresidentschedule.com.
 
 ## Code Quality
 
