@@ -95,12 +95,18 @@ resident's last name (sometimes "Last, First" or "Last" only). Clean up names �
 program/specialty prefixes and suffixes. \
 If a name is "TBD" or contains "TBD" (e.g., "Categorical - TBD", "Prelim - TBD"), \
 skip that row entirely. \
-If multiple rows share a generic name like "Prelim" (without TBD), each row is a \
-different person — disambiguate by appending a number: "Prelim 1", "Prelim 2", etc. \
-Number globally across all PGY levels, not per-PGY. \
+Each resident must have a unique `index` (integer, starting from 0). This index is used \
+to reference the resident in rotations and vacations. \
+Set `is_name` to true if the resident has a real name (e.g., "McDonnel", "Smith"). \
+Set `is_name` to false if the name is a generic placeholder (e.g., "Prelim", "Plastics", \
+"Urology", "CT", "Vascular"). Generic/placeholder residents do NOT need numbering — \
+just use the specialty name as-is (e.g., "Prelim", "Plastics"). The unique `index` \
+field distinguishes them. \
+Set `is_prelim` to true if the resident is a prelim resident (name is "Prelim" or they \
+are identified as preliminary). \
 Rows labeled with just a specialty name (e.g., "Plastics", "Urology", "CT", "Vascular") \
 are real residents whose names aren't known yet. Include them using the specialty as the \
-name, numbering if there are duplicates at the same PGY level.
+name.
 
 2. The PGY (post-graduate year) level is either in a dedicated column or indicated by \
 section headers like "PGY-1", "PGY-2", etc. Valid PGY levels are 1-5. If a row has \
@@ -197,16 +203,19 @@ Return a JSON object (no markdown fences, no extra text) with three keys:
 {{
   "residents": [
     {{
+      "index": integer (unique, starting from 0),
       "name": "string",
       "pgy": integer,
       "program": "General Surgery",
       "is_visiting": boolean,
-      "visiting_institution": "string" or null
+      "visiting_institution": "string" or null,
+      "is_prelim": boolean,
+      "is_name": boolean (true if real name, false if generic placeholder)
     }}
   ],
   "rotations": [
     {{
-      "resident": "string (must match a name in residents)",
+      "resident_index": integer (must match an index in residents),
       "rotation": "full rotation name from valid list",
       "start_date": "YYYY-MM-DD",
       "end_date": "YYYY-MM-DD",
@@ -216,7 +225,7 @@ Return a JSON object (no markdown fences, no extra text) with three keys:
   ],
   "vacations": [
     {{
-      "resident": "string (must match a name in residents)",
+      "resident_index": integer (must match an index in residents),
       "vac_start": "YYYY-MM-DD",
       "vac_end": "YYYY-MM-DD",
       "vac_type": "vacation" or "conference"
@@ -482,8 +491,8 @@ def write_to_db(data: dict, db_path: str) -> None:
 
     session = Session(engine)
     try:
-        # Insert residents and build name -> id map
-        resident_ids: dict[str, int] = {}
+        # Insert residents and build index -> db id map
+        resident_ids: dict[int, int] = {}
         for r in data["residents"]:
             resident = Resident(
                 name=r["name"],
@@ -491,17 +500,20 @@ def write_to_db(data: dict, db_path: str) -> None:
                 program=r.get("program", "General Surgery"),
                 is_visiting=1 if r.get("is_visiting") else 0,
                 visiting_institution=r.get("visiting_institution"),
+                is_prelim=1 if r.get("is_prelim") else 0,
+                is_name=1 if r.get("is_name", True) else 0,
             )
             session.add(resident)
             session.flush()
-            resident_ids[r["name"]] = resident.id
+            resident_ids[r["index"]] = resident.id
 
         # Insert rotations
         for rot in data["rotations"]:
-            resident_id = resident_ids.get(rot["resident"])
+            resident_id = resident_ids.get(rot["resident_index"])
             if resident_id is None:
                 logger.warning(
-                    "Rotation references unknown resident: %s", rot["resident"]
+                    "Rotation references unknown resident index: %s",
+                    rot["resident_index"],
                 )
                 continue
             entry = Schedule(
@@ -516,10 +528,11 @@ def write_to_db(data: dict, db_path: str) -> None:
 
         # Insert vacations
         for vac in data["vacations"]:
-            resident_id = resident_ids.get(vac["resident"])
+            resident_id = resident_ids.get(vac["resident_index"])
             if resident_id is None:
                 logger.warning(
-                    "Vacation references unknown resident: %s", vac["resident"]
+                    "Vacation references unknown resident index: %s",
+                    vac["resident_index"],
                 )
                 continue
             vac_row = Vacation(
@@ -629,29 +642,38 @@ def main() -> None:
     logger.info("  Programs: %s", ", ".join(sorted(programs)))
 
     if args.debug:
+        # Build index -> name map for debug display
+        index_to_name = {r["index"]: r["name"] for r in residents}
+
         for r in residents:
             visit_str = (
                 f" [visiting from {r['visiting_institution']}]"
                 if r.get("is_visiting")
                 else ""
             )
-            print(f"  PGY{r['pgy']} {r['name']} ({r.get('program', '?')}){visit_str}")
+            name_str = " [generic]" if not r.get("is_name", True) else ""
+            prelim_str = " [prelim]" if r.get("is_prelim") else ""
+            print(
+                f"  PGY{r['pgy']} {r['name']} "
+                f"({r.get('program', '?')}){visit_str}{name_str}{prelim_str}"
+            )
 
         print()
         for rot in rotations:
+            rname = index_to_name.get(rot["resident_index"], "?")
             loc_str = f" ({rot['location']})" if rot.get("location") else ""
             elec_str = " [elective]" if rot.get("is_elective") else ""
             print(
-                f"  {rot['resident']}: {rot['rotation']}{loc_str}{elec_str} "
+                f"  {rname}: {rot['rotation']}{loc_str}{elec_str} "
                 f"({rot['start_date']} to {rot['end_date']})"
             )
 
         if vacations:
             print()
             for v in vacations:
+                rname = index_to_name.get(v["resident_index"], "?")
                 print(
-                    f"  {v['resident']}: {v['vac_type']} "
-                    f"{v['vac_start']} to {v['vac_end']}"
+                    f"  {rname}: {v['vac_type']} " f"{v['vac_start']} to {v['vac_end']}"
                 )
 
     if args.dry_run:

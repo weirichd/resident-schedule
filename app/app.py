@@ -22,12 +22,12 @@ def get_session() -> Session:
 def get_schedule_entries(
     date: Optional[str] = None,
     rotation: Optional[str] = None,
-    name: Optional[str] = None,
+    resident_id: Optional[int] = None,
     include_visiting: bool = True,
 ) -> list[dict]:
     """Query schedule entries and return structured dicts with vacation info.
 
-    Exactly one of date, rotation, or name should be provided.
+    Exactly one of date, rotation, or resident_id should be provided.
     """
     session = get_session()
     try:
@@ -37,8 +37,8 @@ def get_schedule_entries(
             .options(joinedload(Schedule.resident).joinedload(Resident.vacations))
         )
 
-        if name:
-            q = q.filter(Resident.name == name).order_by(Schedule.start_date)
+        if resident_id:
+            q = q.filter(Resident.id == resident_id).order_by(Schedule.start_date)
         elif rotation:
             q = q.filter(Schedule.rotation == rotation).order_by(Schedule.start_date)
         else:
@@ -49,7 +49,7 @@ def get_schedule_entries(
                 func.date(date) <= func.date(Schedule.end_date),
             )
 
-        if not include_visiting and not name:
+        if not include_visiting and not resident_id:
             q = q.filter(Resident.is_visiting == 0)
 
         entries = q.all()
@@ -82,6 +82,7 @@ def get_all_resident_names() -> list[dict]:
         residents = session.query(Resident).order_by(Resident.name).all()
         return [
             {
+                "id": r.id,
                 "pgy": str(r.pgy),
                 "name": r.name,
                 "is_visiting": r.is_visiting,
@@ -236,17 +237,20 @@ def rotation_schedule(
 
 @app.get("/resident/", response_class=HTMLResponse)
 def resident_schedule(
-    request: Request, name: str = Query(..., description="Name parameter")
+    request: Request, id: int = Query(..., description="Resident ID")
 ):
-    entries = get_schedule_entries(name=name)
+    entries = get_schedule_entries(resident_id=id)
     groups = _group_by_pgy(entries)
+
+    # Get the resident name for the header
+    resident_name = entries[0]["name"] if entries else "Unknown"
 
     return templates.TemplateResponse(
         "home.html",
         {
             "request": request,
             "groups": groups,
-            "header_text": f"Schedule for Resident: {name}",
+            "header_text": f"Schedule for Resident: {resident_name}",
             "include_visiting": True,
         },
     )

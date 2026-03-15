@@ -13,6 +13,8 @@ class Resident(Base):
     program = Column(Text, nullable=False, default="General Surgery")
     is_visiting = Column(Integer, default=0)
     visiting_institution = Column(Text, nullable=True)
+    is_prelim = Column(Integer, default=0)
+    is_name = Column(Integer, default=1)
 
     schedule_entries = relationship("Schedule", back_populates="resident")
     vacations = relationship("Vacation", back_populates="resident")
