@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import re
+import time
 
 from dotenv import load_dotenv
 
@@ -211,42 +212,26 @@ guessing.
 
 ## Output Format
 
-Return a JSON object (no markdown fences, no extra text) with three keys:
+Return JSONL (JSON Lines) — one JSON object per line, no markdown fences, no extra \
+text. Each line must be one of three types, indicated by the "type" field:
 
-```
-{{
-  "residents": [
-    {{
-      "index": integer (unique, starting from 0),
-      "name": "string",
-      "pgy": integer,
-      "program": "General Surgery",
-      "is_visiting": boolean,
-      "visiting_institution": "string" or null,
-      "is_prelim": boolean,
-      "is_name": boolean (true if real name, false if generic placeholder)
-    }}
-  ],
-  "rotations": [
-    {{
-      "resident_index": integer (must match an index in residents),
-      "rotation": "full rotation name from valid list",
-      "start_date": "YYYY-MM-DD",
-      "end_date": "YYYY-MM-DD",
-      "location": "East" or null,
-      "is_elective": boolean
-    }}
-  ],
-  "vacations": [
-    {{
-      "resident_index": integer (must match an index in residents),
-      "vac_start": "YYYY-MM-DD",
-      "vac_end": "YYYY-MM-DD",
-      "vac_type": "vacation" or "conference"
-    }}
-  ]
-}}
-```
+Resident lines (output ALL residents first, before any rotations or vacations):
+{{"type": "resident", "index": integer, "name": "string", "pgy": integer, "program": "General Surgery", "is_visiting": boolean, "visiting_institution": "string or null", "is_prelim": boolean, "is_name": boolean}}
+
+Rotation lines:
+{{"type": "rotation", "resident_index": integer, "rotation": "full rotation name", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "location": "East or null", "is_elective": boolean}}
+
+Vacation lines:
+{{"type": "vacation", "resident_index": integer, "vac_start": "YYYY-MM-DD", "vac_end": "YYYY-MM-DD", "vac_type": "vacation or conference"}}
+
+Example output (each line is a complete, independent JSON object):
+{{"type": "resident", "index": 0, "name": "Smith", "pgy": 1, "program": "General Surgery", "is_visiting": false, "visiting_institution": null, "is_prelim": false, "is_name": true}}
+{{"type": "resident", "index": 1, "name": "Jones", "pgy": 2, "program": "General Surgery", "is_visiting": false, "visiting_institution": null, "is_prelim": false, "is_name": true}}
+{{"type": "rotation", "resident_index": 0, "rotation": "Acute Care Surgery", "start_date": "2026-07-01", "end_date": "2026-08-30", "location": null, "is_elective": false}}
+{{"type": "vacation", "resident_index": 0, "vac_start": "2026-08-11", "vac_end": "2026-08-17", "vac_type": "vacation"}}
+
+IMPORTANT: Output ONLY these JSONL lines. No commentary, no markdown code fences, no \
+blank lines between entries. Each line must be valid JSON on its own.
 
 ## Asking for Clarification
 
@@ -263,20 +248,12 @@ ambiguous and a wrong guess could corrupt the schedule. Do NOT ask about:
 Use your best judgment and proceed. Only ask if you genuinely cannot determine the \
 correct interpretation and guessing wrong would produce incorrect data.
 
-To ask questions, respond with a JSON object with a single key "questions" containing \
-a list of strings:
-
-```
+To ask questions, respond with a JSON object on a single line with a "questions" key:
 {{"questions": ["What rotation does 'XYZ' map to?"]}}
-```
 
-The user will answer your questions, and then you should produce the final JSON. \
+The user will answer your questions, and then you should produce the final JSONL. \
 Ask all your questions at once rather than one at a time. Keep questions to a maximum \
 of 3 — if you have more, resolve the rest with your best guess.
-
-When you are confident about the data and have no questions, return ONLY the JSON \
-object with "residents", "rotations", and "vacations" keys. No commentary, no markdown \
-code fences.
 """
 
 
@@ -387,6 +364,60 @@ def _load_state(state_path: str) -> dict:
         return json.load(f)
 
 
+def _parse_jsonl(text: str) -> dict:
+    """Parse JSONL response into a dict with residents, rotations, and vacations."""
+    text = _strip_fences(text)
+    residents = []
+    rotations = []
+    vacations = []
+    errors = 0
+
+    for line_num, line in enumerate(text.splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line, strict=False)
+        except json.JSONDecodeError as e:
+            logger.warning("Skipping malformed JSONL line %d: %s", line_num, e)
+            errors += 1
+            continue
+
+        record_type = obj.get("type")
+        if record_type == "resident":
+            residents.append(obj)
+        elif record_type == "rotation":
+            rotations.append(obj)
+        elif record_type == "vacation":
+            vacations.append(obj)
+        else:
+            logger.warning(
+                "Skipping unknown record type on line %d: %s", line_num, record_type
+            )
+            errors += 1
+
+    if errors:
+        logger.warning("Total malformed/unknown lines skipped: %d", errors)
+
+    return {"residents": residents, "rotations": rotations, "vacations": vacations}
+
+
+def _wait_for_rate_limit(headers: dict) -> None:
+    """Sleep until the rate limit resets if tokens are exhausted."""
+    remaining = headers.get("anthropic-ratelimit-input-tokens-remaining")
+    if remaining is not None and int(remaining) == 0:
+        reset_at = headers.get("anthropic-ratelimit-input-tokens-reset")
+        if reset_at:
+            from datetime import datetime, timezone
+
+            reset_time = datetime.fromisoformat(reset_at.replace("Z", "+00:00"))
+            wait = (reset_time - datetime.now(timezone.utc)).total_seconds()
+            if wait > 0:
+                wait = min(wait + 2, 120)  # small buffer, cap at 2 min
+                logger.info("Rate limit reached, waiting %.0fs for reset...", wait)
+                time.sleep(wait)
+
+
 def call_claude(
     csv_text: str,
     year: int,
@@ -394,11 +425,11 @@ def call_claude(
     answers_file: str | None = None,
     input_file: str | None = None,
 ) -> dict:
-    """Send the CSV to Claude and parse the JSON response.
+    """Send the CSV to Claude and parse the JSONL response.
 
     Supports a multi-turn clarification loop: if Claude responds with
     {"questions": [...]}, the user is prompted for answers and the
-    conversation continues until Claude returns the final JSON.
+    conversation continues until Claude returns the final JSONL.
 
     When ``answers_file`` is provided, the function loads a previously
     saved conversation state and resumes by sending the answers file
@@ -451,7 +482,7 @@ def call_claude(
                 "role": "user",
                 "content": (
                     "Here is the rotation schedule as CSV. "
-                    "Parse it and return JSON.\n\n" + csv_text
+                    "Parse it and return JSONL.\n\n" + csv_text
                 ),
             }
         ]
@@ -466,12 +497,14 @@ def call_claude(
     total_input_tokens = 0
     total_output_tokens = 0
 
+    accumulated_response = ""
+
     while True:
         logger.info("Calling Claude (%s)...", model)
 
         with client.messages.stream(
             model=model,
-            max_tokens=32000,
+            max_tokens=64000,
             system=system_prompt,
             messages=messages,
         ) as stream:
@@ -485,25 +518,38 @@ def call_claude(
 
         if message.stop_reason == "max_tokens":
             logger.warning(
-                "Response truncated (hit max_tokens). " "Asking Claude to continue..."
+                "Response truncated (hit max_tokens). Asking Claude to continue..."
             )
+            accumulated_response += response_text
             messages.append({"role": "assistant", "content": response_text})
             messages.append(
                 {
                     "role": "user",
                     "content": (
                         "Your response was truncated. "
-                        "Please continue the JSON from where you left off."
+                        "Continue outputting JSONL from where you left off."
                     ),
                 }
             )
+            # Wait for rate limit before retrying
+            _wait_for_rate_limit(
+                dict(stream.response.headers) if hasattr(stream, "response") else {}
+            )
             continue
 
-        parsed = json.loads(_strip_fences(response_text))
+        # Combine with any previously truncated response parts
+        full_response = accumulated_response + response_text
+        accumulated_response = ""
 
-        # Check if Claude is asking questions
-        if isinstance(parsed, dict) and "questions" in parsed:
-            questions = parsed["questions"]
+        # Check if the first line is a questions object
+        first_line = full_response.strip().splitlines()[0].strip()
+        try:
+            first_obj = json.loads(first_line, strict=False)
+        except json.JSONDecodeError:
+            first_obj = None
+
+        if isinstance(first_obj, dict) and "questions" in first_obj:
+            questions = first_obj["questions"]
             print("\nClaude has questions about the schedule:\n")
             for i, q in enumerate(questions, 1):
                 print(f"  {i}. {q}")
@@ -530,7 +576,7 @@ def call_claude(
                         "role": "user",
                         "content": (
                             "I don't have answers to these questions. "
-                            "Use your best judgment and produce the final JSON array."
+                            "Use your best judgment and produce the final JSONL."
                         ),
                     }
                 )
@@ -538,12 +584,11 @@ def call_claude(
                 messages.append({"role": "user", "content": answers})
             continue
 
-        # Should be the final JSON object with residents/rotations/vacations
-        if not isinstance(parsed, dict):
-            raise ValueError(f"Expected JSON object, got {type(parsed).__name__}")
-        for key in ("residents", "rotations", "vacations"):
-            if key not in parsed:
-                raise ValueError(f"Missing required key: {key}")
+        # Parse JSONL response
+        parsed = _parse_jsonl(full_response)
+
+        if not parsed["residents"]:
+            raise ValueError("No residents found in response")
 
         # Clean up state file on successful completion
         if state_path and os.path.exists(state_path):

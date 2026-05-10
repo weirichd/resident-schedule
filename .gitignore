@@ -1,6 +1,8 @@
 *.ipynb
 *.xlsx
 *.zip
+*.png
+*.parse_state.json
 
 .env
 .idea
@@ -8,3 +10,4 @@
 .mypy_cache
 .coverage
 __pycache__
+.playwright-mcp/

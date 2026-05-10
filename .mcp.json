@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "resident_schedule": {
+      "command": "poetry",
+      "args": ["run", "python", "mcp_schedule.py"],
+      "cwd": "/home/david/workspace/resident-schedule"
+    }
+  }
+}
