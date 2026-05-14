@@ -169,6 +169,7 @@ def _entries_to_dicts(
                 "program": r.program,
                 "rotation": rotation_display,
                 "rotation_raw": e.rotation,
+                "rotation_start_iso": e.start_date,
                 "is_elective": e.is_elective,
                 "start_date": start.strftime("%b %d, %Y"),
                 "end_date": end.strftime("%b %d, %Y"),
@@ -217,18 +218,64 @@ def _align_pgy_groups(*group_lists: list[dict]) -> list[list[dict]]:
     return aligned
 
 
+def _find_next_data_date(target: date) -> date | None:
+    """Find the earliest date with schedule data on or after target.
+
+    If no future data exists, falls back to the most recent past data.
+    Returns None when the database has no schedule entries at all.
+    """
+    target_iso = target.isoformat()
+    session = get_session()
+    try:
+        next_start = (
+            session.query(func.min(Schedule.start_date))
+            .filter(Schedule.start_date >= target_iso)
+            .scalar()
+        )
+        if next_start:
+            return date.fromisoformat(next_start)
+        prev_end = session.query(func.max(Schedule.end_date)).scalar()
+        if prev_end:
+            return date.fromisoformat(prev_end)
+        return None
+    finally:
+        session.close()
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, include_visiting: bool = True):
-    entries = get_schedule_entries(include_visiting=include_visiting)
+    today = date.today()
+    entries = get_schedule_entries(
+        date=today.isoformat(), include_visiting=include_visiting
+    )
+    fallback_date = None
+    if not entries:
+        nearest = _find_next_data_date(today)
+        if nearest and nearest != today:
+            fallback_date = nearest
+            entries = get_schedule_entries(
+                date=nearest.isoformat(), include_visiting=include_visiting
+            )
+
     groups = _group_by_pgy(entries)
+    header_text = (
+        f"Schedule for {fallback_date.strftime('%b %d, %Y')}"
+        if fallback_date
+        else "Current Schedule for Today"
+    )
 
     return templates.TemplateResponse(
         "home.html",
         {
             "request": request,
             "groups": groups,
-            "header_text": "Current Schedule for Today",
+            "header_text": header_text,
             "include_visiting": include_visiting,
+            "fallback_date": fallback_date.isoformat() if fallback_date else None,
+            "fallback_display": (
+                fallback_date.strftime("%b %d, %Y") if fallback_date else None
+            ),
+            "today_display": today.strftime("%b %d, %Y"),
         },
     )
 
@@ -376,6 +423,7 @@ def rotation_detail(
             "request": request,
             "rotation_name": rotation_name,
             "display_date": display_date,
+            "iso_date": date,
             "current_groups": current_groups,
             "coming_next_groups": coming_next_groups,
             "include_visiting": include_visiting,

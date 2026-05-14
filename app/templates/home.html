@@ -21,6 +21,12 @@
         <h1 class="display-6">{{ header_text }}</h1>
     </div>
 
+    {% if fallback_date %}
+    <div class="alert alert-info">
+        No schedule data for {{ today_display }}. Showing the next available date — {{ fallback_display }}.
+    </div>
+    {% endif %}
+
     {% if include_visiting is defined %}
     <div class="mb-3">
         <div class="form-check">
@@ -41,11 +47,8 @@
 
     {% if groups|length == 0 %}
 
-        <div class="alert alert-danger">
-        No data was found.
-        This is most likely due to the schedule being out of date.
-        If it is still early in the school year, hang tight, David will eventually get around to
-        updating it.
+        <div class="alert alert-warning">
+        No schedule data is loaded yet. Check back once the next academic year is published.
         </div>
 
     {% elif groups|length == 1 %}

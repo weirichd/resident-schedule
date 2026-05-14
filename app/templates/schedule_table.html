@@ -21,7 +21,7 @@
                 {% endif %}
             </td>
             <td>
-                <a href="/rotation/{{ entry.rotation_raw | urlencode }}/">{{ entry.rotation }}</a>
+                <a href="/rotation/{{ entry.rotation_raw | urlencode }}/?date={{ entry.rotation_start_iso }}">{{ entry.rotation }}</a>
                 {% if entry.is_elective %}
                     <span class="badge" style="font-size: 0.7rem; font-weight: 500; background-color: #d4edda; color: #155724;">Elective</span>
                 {% endif %}

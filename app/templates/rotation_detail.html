@@ -24,6 +24,20 @@
         <p class="text-muted">{{ display_date }}</p>
     </div>
 
+    <div class="mb-3">
+        <label class="form-label" for="rotation-date">Show date</label>
+        <input type="date" id="rotation-date" class="form-control" style="max-width: 220px;"
+               value="{{ iso_date }}">
+    </div>
+    <script>
+    document.getElementById('rotation-date').addEventListener('change', function() {
+        if (!this.value) return;
+        var url = new URL(window.location.href);
+        url.searchParams.set('date', this.value);
+        window.location.href = url.toString();
+    });
+    </script>
+
     {% if include_visiting is defined %}
     <div class="mb-3">
         <div class="form-check">
