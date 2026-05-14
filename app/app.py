@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from fastapi import FastAPI, Request, Query
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -15,6 +16,25 @@ from app.vacation_checker import check_vacation, get_academic_year_bounds
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    details = []
+    for err in exc.errors():
+        loc = ".".join(str(p) for p in err.get("loc", []) if p != "query")
+        msg = err.get("msg", "invalid value")
+        details.append(f"{loc}: {msg}" if loc else msg)
+    return templates.TemplateResponse(
+        "error.html",
+        {
+            "request": request,
+            "title": "That link doesn't look right",
+            "message": "The page you tried to load is missing some required information.",
+            "details": details,
+        },
+        status_code=400,
+    )
 
 
 def get_session() -> Session:
@@ -312,7 +332,7 @@ def rotation_detail(
         date = pd.Timestamp.now().strftime("%Y-%m-%d")
 
     entries = get_schedule_entries(date=date, include_visiting=include_visiting)
-    current = [e for e in entries if e["rotation"].startswith(rotation_name)]
+    current = [e for e in entries if e["rotation_raw"] == rotation_name]
     current_groups = _group_by_pgy(current) if current else []
 
     coming_next = get_coming_next_entries(
@@ -376,11 +396,29 @@ def _pgy_grouped_residents() -> dict[str, list[dict]]:
     return name_list
 
 
+def _vacation_form_context(request: Request, **extra) -> dict:
+    # Allow planning across the current AY and the next one — residents
+    # commonly request vacation a year out.
+    today_ay_start, _ = get_academic_year_bounds(date.today())
+    _, next_ay_end = get_academic_year_bounds(
+        date(today_ay_start.year + 1, today_ay_start.month, today_ay_start.day)
+    )
+    ctx = {
+        "request": request,
+        "names": _pgy_grouped_residents(),
+        "result": None,
+        "min_date": today_ay_start.isoformat(),
+        "max_date": next_ay_end.isoformat(),
+    }
+    ctx.update(extra)
+    return ctx
+
+
 @app.get("/vacation_checker/", response_class=HTMLResponse)
 def vacation_checker_form(request: Request):
     return templates.TemplateResponse(
         "vacation_checker.html",
-        {"request": request, "names": _pgy_grouped_residents(), "result": None},
+        _vacation_form_context(request),
     )
 
 
@@ -391,8 +429,35 @@ def vacation_check(
     start_date: str = Query(...),
     end_date: str = Query(...),
 ):
-    req_start = date.fromisoformat(start_date)
-    req_end = date.fromisoformat(end_date)
+    try:
+        req_start = date.fromisoformat(start_date)
+        req_end = date.fromisoformat(end_date)
+    except ValueError:
+        return templates.TemplateResponse(
+            "vacation_checker.html",
+            _vacation_form_context(
+                request,
+                error_message="Start and end dates must be valid YYYY-MM-DD dates.",
+                selected_resident_id=resident_id,
+                selected_start=start_date,
+                selected_end=end_date,
+            ),
+            status_code=400,
+        )
+
+    if req_end < req_start:
+        return templates.TemplateResponse(
+            "vacation_checker.html",
+            _vacation_form_context(
+                request,
+                error_message="End date must be on or after start date.",
+                selected_resident_id=resident_id,
+                selected_start=start_date,
+                selected_end=end_date,
+            ),
+            status_code=400,
+        )
+
     ay_start, ay_end = get_academic_year_bounds(req_start)
 
     session = get_session()
@@ -401,7 +466,13 @@ def vacation_check(
         if resident_obj is None:
             return templates.TemplateResponse(
                 "vacation_checker.html",
-                {"request": request, "names": _pgy_grouped_residents(), "result": None},
+                _vacation_form_context(
+                    request,
+                    error_message=f"No resident found with id {resident_id}.",
+                    selected_start=start_date,
+                    selected_end=end_date,
+                ),
+                status_code=404,
             )
 
         resident = {
@@ -508,14 +579,13 @@ def vacation_check(
 
         return templates.TemplateResponse(
             "vacation_checker.html",
-            {
-                "request": request,
-                "names": _pgy_grouped_residents(),
-                "result": result,
-                "selected_resident_id": resident_id,
-                "selected_start": start_date,
-                "selected_end": end_date,
-            },
+            _vacation_form_context(
+                request,
+                result=result,
+                selected_resident_id=resident_id,
+                selected_start=start_date,
+                selected_end=end_date,
+            ),
         )
     finally:
         session.close()

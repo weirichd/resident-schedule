@@ -649,7 +649,11 @@ def write_to_db(data: dict, db_path: str) -> None:
             )
             session.add(entry)
 
-        # Insert vacations
+        # Insert vacations, deduplicating on (resident_id, vac_start)
+        # When duplicates appear, keep the one with the latest vac_end —
+        # the LLM parser sometimes emits the same vacation as both Mon-Fri
+        # and Mon-Sun representations.
+        seen_vacs: dict[tuple[int, str], Vacation] = {}
         for vac in data["vacations"]:
             resident_id = resident_ids.get(vac["resident_index"])
             if resident_id is None:
@@ -658,6 +662,12 @@ def write_to_db(data: dict, db_path: str) -> None:
                     vac["resident_index"],
                 )
                 continue
+            key = (resident_id, vac["vac_start"])
+            existing = seen_vacs.get(key)
+            if existing is not None:
+                if vac["vac_end"] > existing.vac_end:
+                    existing.vac_end = vac["vac_end"]
+                continue
             vac_row = Vacation(
                 resident_id=resident_id,
                 vac_start=vac["vac_start"],
@@ -665,6 +675,7 @@ def write_to_db(data: dict, db_path: str) -> None:
                 vac_type=vac.get("vac_type", "vacation"),
             )
             session.add(vac_row)
+            seen_vacs[key] = vac_row
 
         session.commit()
         logger.info(

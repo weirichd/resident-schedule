@@ -36,6 +36,8 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
 <script>
     new TomSelect('#resident-select', {
+        maxOptions: null,
+        lockOptgroupOrder: true,
         render: {
             optgroup_header: function(data, escape) {
                 return '<div class="optgroup-header fw-bold">' + escape(data.label) + '</div>';

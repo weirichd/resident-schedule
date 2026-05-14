@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1 class="display-6">{{ title|default("Something went wrong") }}</h1>
+        {% if message %}
+        <p class="lead text-muted">{{ message }}</p>
+        {% endif %}
+    </div>
+
+    {% if details %}
+    <ul class="text-muted">
+        {% for d in details %}
+        <li>{{ d }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="mt-4">
+        <p>You can pick something below to get back on track:</p>
+        <ul>
+            <li><a href="/">Today's schedule</a></li>
+            <li><a href="/date_picker/">View by date</a></li>
+            <li><a href="/rotation_picker/">View by rotation</a></li>
+            <li><a href="/resident_picker/">View by resident</a></li>
+            <li><a href="/vacation_checker/">Check a vacation request</a></li>
+        </ul>
+    </div>
+{% endblock %}
