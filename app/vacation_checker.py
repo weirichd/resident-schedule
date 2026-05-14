@@ -266,10 +266,20 @@ def check_annual_allowance(
     req_end: date,
 ) -> RuleResult:
     """Total vacation + proposed must not exceed 20 weekdays per academic year."""
-    used = sum(count_weekdays(v["vac_start"], v["vac_end"]) for v in existing_vacations)
+    contributions = [
+        (v, count_weekdays(v["vac_start"], v["vac_end"])) for v in existing_vacations
+    ]
+    used = sum(wd for _, wd in contributions)
     requested = count_weekdays(req_start, req_end)
     total = used + requested
     remaining_after = 20 - total
+
+    details = [
+        f"{v.get('vac_type', 'vacation').capitalize()}: "
+        f"{v['vac_start'].strftime('%b %d')}–{v['vac_end'].strftime('%b %d, %Y')} "
+        f"({wd} weekday{'s' if wd != 1 else ''})"
+        for v, wd in sorted(contributions, key=lambda x: x[0]["vac_start"])
+    ]
 
     if total > 20:
         return RuleResult(
@@ -280,6 +290,7 @@ def check_annual_allowance(
                 f"Would use {total} of 20 weekdays "
                 f"({used} already used + {requested} requested)."
             ),
+            details=details,
         )
     return RuleResult(
         rule_name="annual_allowance",
@@ -290,6 +301,7 @@ def check_annual_allowance(
             f"({used} used + {requested} requested, "
             f"{remaining_after} remaining)."
         ),
+        details=details,
     )
 
 
@@ -366,7 +378,8 @@ def check_call_pool_conflict(
     req_end: date,
 ) -> RuleResult:
     """No two residents absent from the same call pool at the same time."""
-    conflicts: dict[str, str] = {}
+    # resident_name -> set of shared pool names
+    conflicts: dict[str, set[str]] = {}
     d = req_start
 
     while d <= req_end:
@@ -399,20 +412,22 @@ def check_call_pool_conflict(
 
             other_pools = get_call_pools_for_rotation(other_rotation)
             shared_pools = set(my_pools) & set(other_pools)
-            for pool in shared_pools:
-                key = f"{vac['resident_name']} ({pool})"
-                if key not in conflicts:
-                    conflicts[key] = pool
+            if shared_pools:
+                conflicts.setdefault(vac["resident_name"], set()).update(shared_pools)
 
         d += timedelta(days=1)
 
     if conflicts:
+        details = []
+        for name in sorted(conflicts):
+            pool_list = ", ".join(sorted(conflicts[name]))
+            details.append(f"{name} (shared pool: {pool_list})")
         return RuleResult(
             rule_name="call_pool_conflict",
             display_name="Call Pool Conflict",
             passed=False,
-            message="Another resident in the same call pool is already on vacation.",
-            details=[f"{c} is also on vacation" for c in conflicts],
+            message="Another resident's vacation overlaps a shared call pool.",
+            details=details,
         )
     return RuleResult(
         rule_name="call_pool_conflict",
@@ -608,18 +623,22 @@ def check_vacation(
     """
     weekdays = count_weekdays(req_start, req_end)
 
-    # Check exemption: PGY-1/2 categorical General Surgery on vacation block
+    # Check exemption: PGY-1/2 categorical General Surgery during their
+    # built-in vacation block. The block isn't a Schedule rotation row;
+    # it's a single multi-week Vacation row created by the parser. We
+    # detect it by length (15+ weekdays = 3+ weeks).
     is_categorical = (
         resident["program"] == "General Surgery"
         and not resident["is_prelim"]
         and resident["pgy"] in (1, 2)
     )
-    has_vacation_block = any(
-        entry["rotation"] == "Vacation"
-        for entry in resident_schedule
-        if dates_overlap(req_start, req_end, entry["start_date"], entry["end_date"])
+    in_vacation_block = is_categorical and any(
+        count_weekdays(v["vac_start"], v["vac_end"]) >= 15
+        and v["vac_start"] <= req_start
+        and req_end <= v["vac_end"]
+        for v in resident_vacations
     )
-    if is_categorical and has_vacation_block:
+    if in_vacation_block:
         return VacationCheckResult(
             resident_name=resident["name"],
             resident_pgy=resident["pgy"],

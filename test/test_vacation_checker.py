@@ -528,21 +528,21 @@ class TestCheckVacationOrchestrator:
             "is_visiting": False,
             "is_prelim": False,
         }
-        schedule = [
+        # Built-in 4-week block: Mon Oct 5 - Fri Oct 30 = 20 weekdays
+        block_vacation = [
             {
-                "resident_id": 1,
-                "rotation": "Vacation",
-                "start_date": date(2026, 10, 1),
-                "end_date": date(2026, 10, 30),
+                "vac_start": date(2026, 10, 5),
+                "vac_end": date(2026, 10, 30),
+                "vac_type": "vacation",
             }
         ]
         result = check_vacation(
             resident=resident,
             req_start=date(2026, 10, 6),
             req_end=date(2026, 10, 10),
-            resident_schedule=schedule,
-            resident_vacations=[],
-            all_schedules=schedule,
+            resident_schedule=[],
+            resident_vacations=block_vacation,
+            all_schedules=[],
             all_vacations=[],
         )
         assert result.exempt
@@ -557,24 +557,56 @@ class TestCheckVacationOrchestrator:
             "is_visiting": False,
             "is_prelim": True,
         }
-        schedule = [
+        block_vacation = [
             {
-                "resident_id": 1,
-                "rotation": "Vacation",
-                "start_date": date(2026, 10, 1),
-                "end_date": date(2026, 10, 30),
+                "vac_start": date(2026, 10, 5),
+                "vac_end": date(2026, 10, 30),
+                "vac_type": "vacation",
             }
         ]
         result = check_vacation(
             resident=resident,
             req_start=date(2026, 10, 6),
             req_end=date(2026, 10, 10),
-            resident_schedule=schedule,
-            resident_vacations=[],
-            all_schedules=schedule,
+            resident_schedule=[],
+            resident_vacations=block_vacation,
+            all_schedules=[],
             all_vacations=[],
         )
         assert not result.exempt
+
+    def test_not_exempt_outside_block(self):
+        """Categorical PGY-2 requesting vacation outside their block runs all
+        rules — block doesn't grant a free pass for any other date."""
+        resident = {
+            "id": 1,
+            "name": "Test",
+            "pgy": 2,
+            "program": "General Surgery",
+            "is_visiting": False,
+            "is_prelim": False,
+        }
+        block_vacation = [
+            {
+                "vac_start": date(2027, 2, 8),
+                "vac_end": date(2027, 3, 7),
+                "vac_type": "vacation",
+            }
+        ]
+        # Request Mon Aug 10 - Sun Aug 16 (outside block)
+        result = check_vacation(
+            resident=resident,
+            req_start=date(2026, 8, 10),
+            req_end=date(2026, 8, 16),
+            resident_schedule=[],
+            resident_vacations=block_vacation,
+            all_schedules=[],
+            all_vacations=[],
+        )
+        assert not result.exempt
+        # Annual allowance should fail because block (20 wkdays) + 5 = 25
+        allowance = next(r for r in result.results if r.rule_name == "annual_allowance")
+        assert not allowance.passed
 
     def test_all_rules_run(self):
         """Verify all 10 rules are checked for a non-exempt resident."""
