@@ -29,7 +29,7 @@
                         {% for entry in names[pgy_key] %}
                         <option value="{{ entry.id }}"
                             {% if selected_resident_id is defined and entry.id == selected_resident_id %}selected{% endif %}>
-                            {{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% endif %}
+                            {{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% elif entry.program and entry.program != 'General Surgery' %} ({{ entry.program }}){% endif %}
                         </option>
                         {% endfor %}
                     </optgroup>

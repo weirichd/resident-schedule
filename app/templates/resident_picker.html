@@ -22,7 +22,7 @@
                 {% if names[pgy_key] %}
                 <optgroup label="PGY {{ pgy_num }}">
                     {% for entry in names[pgy_key] %}
-                    <option value="{{ entry.id }}">{{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% endif %}</option>
+                    <option value="{{ entry.id }}">{{ entry.name }}{% if entry.visiting_institution %} ({{ entry.visiting_institution }}){% elif entry.program and entry.program != 'General Surgery' %} ({{ entry.program }}){% endif %}</option>
                     {% endfor %}
                 </optgroup>
                 {% endif %}

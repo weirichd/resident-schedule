@@ -1,3 +1,6 @@
+{% if not group.entries %}
+<p class="text-muted fst-italic">No PGY {{ group.pgy }} residents in this section.</p>
+{% else %}
 <table class="table table-striped">
     <thead>
         <tr>
@@ -5,9 +8,7 @@
             <th>Rotation</th>
             <th>Starting</th>
             <th>Until</th>
-            {% if group.has_vacations %}
             <th>Vacation / Conference</th>
-            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -27,7 +28,6 @@
             </td>
             <td>{{ entry.start_date }}</td>
             <td>{{ entry.end_date }}</td>
-            {% if group.has_vacations %}
             <td>
                 {% for vac in entry.vacations %}
                     {% if vac.type == "conference" %}
@@ -46,8 +46,8 @@
                     {% if not loop.last %}<br>{% endif %}
                 {% endfor %}
             </td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
 </table>
+{% endif %}

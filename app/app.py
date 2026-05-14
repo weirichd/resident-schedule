@@ -107,6 +107,7 @@ def get_all_resident_names() -> list[dict]:
                 "id": r.id,
                 "pgy": str(r.pgy),
                 "name": r.name,
+                "program": r.program,
                 "is_visiting": r.is_visiting,
                 "visiting_institution": r.visiting_institution,
             }
@@ -148,8 +149,8 @@ def _entries_to_dicts(
                 "type": v.vac_type,
                 "start": v.vac_start,
                 "end": v.vac_end,
-                "start_display": vs.strftime("%b %d"),
-                "end_display": ve.strftime("%b %d"),
+                "start_display": vs.strftime("%b %d, %Y"),
+                "end_display": ve.strftime("%b %d, %Y"),
                 "active": False,
             }
 
@@ -169,8 +170,8 @@ def _entries_to_dicts(
                 "rotation": rotation_display,
                 "rotation_raw": e.rotation,
                 "is_elective": e.is_elective,
-                "start_date": start.strftime("%B %d"),
-                "end_date": end.strftime("%B %d"),
+                "start_date": start.strftime("%b %d, %Y"),
+                "end_date": end.strftime("%b %d, %Y"),
                 "vacations": vacations,
                 "on_vacation": on_vacation,
                 "is_visiting": r.is_visiting,
@@ -194,6 +195,26 @@ def _group_by_pgy(entries: list[dict]) -> list[dict]:
         {"pgy": pgy, "entries": groups[pgy], "has_vacations": has_vacations}
         for pgy in sorted(groups.keys())
     ]
+
+
+def _align_pgy_groups(*group_lists: list[dict]) -> list[list[dict]]:
+    """Pad each group list with empty PGY groups so they share a common tab set.
+
+    Used to keep the Current and Coming Next sections of the rotation page
+    visually aligned: if Current has PGY 1, 3, 5 then Coming Next gets empty
+    PGY 3 / 5 tabs instead of silently dropping them.
+    """
+    union = sorted({g["pgy"] for gl in group_lists for g in gl})
+    aligned = []
+    for gl in group_lists:
+        existing = {g["pgy"]: g for g in gl}
+        aligned.append(
+            [
+                existing.get(pgy, {"pgy": pgy, "entries": [], "has_vacations": False})
+                for pgy in union
+            ]
+        )
+    return aligned
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -339,6 +360,13 @@ def rotation_detail(
         rotation_name, date, include_visiting=include_visiting
     )
     coming_next_groups = _group_by_pgy(coming_next) if coming_next else []
+
+    # Pad each section with empty PGY tabs for any PGY that appears in the
+    # other section, so the two sections share the same tab structure.
+    if current_groups and coming_next_groups:
+        current_groups, coming_next_groups = _align_pgy_groups(
+            current_groups, coming_next_groups
+        )
 
     display_date = pd.Timestamp(date).strftime("%B %d, %Y")
 
