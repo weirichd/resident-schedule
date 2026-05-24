@@ -11,3 +11,7 @@
 .coverage
 __pycache__
 .playwright-mcp/
+
+# Editor / tooling artifacts
+tags
+*.swp
