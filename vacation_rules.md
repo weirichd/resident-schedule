@@ -75,5 +75,3 @@ Requests that fall outside these restrictions may be considered on a case-by-cas
 - Program Leadership
 
 Residents on the vacation block schedule (categorical general surgery PGY-1 and PGY-2) are exempt from these restrictions, as coverage for their absences is built into the schedule.
-
-> **IGNORE:** SICU AND PEDS AND EAST VASCULAR AND CT4-7

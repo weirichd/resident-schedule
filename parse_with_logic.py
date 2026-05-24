@@ -72,6 +72,36 @@ ROTATION_MAP = {
     "East - General": "East General Surgery",
     "East General Surgery": "East General Surgery",
     "Elective": "Elective",
+    "Ob": "OB",
+}
+
+
+# Canonical non-elective rotation names (from parse_schedule.py SYSTEM_PROMPT).
+# Elective rotations may use any sub-type name.
+VALID_ROTATIONS = {
+    "Acute Care Surgery",
+    "Breast",
+    "Breast and Endocrine",
+    "Burn",
+    "Colorectal Surgery",
+    "East General Surgery",
+    "Elective",
+    "Endoscopy",
+    "Hepatobiliary Surgery",
+    "Jeopardy",
+    "Melanoma and Sarcoma",
+    "Mount Carmel East",
+    "Night Float",
+    "Outpatient",
+    "Outpatient Surgical Oncology",
+    "Pediatric Surgery",
+    "Surgical ICU",
+    "Thoracic",
+    "Transplant",
+    "Trauma",
+    "Vascular",
+    "Vascular East",
+    "Zollinger Ellison",
 }
 
 
@@ -85,9 +115,7 @@ def map_rotation(raw: str) -> tuple[str, str | None, bool]:
     is_elective = False
 
     # Strip elective markers
-    elective_match = re.match(
-        r"(?i)^(?:Elective\s*[-:\(]?\s*|Elect\s+)(.+?)\)?$", raw
-    )
+    elective_match = re.match(r"(?i)^(?:Elective\s*[-:\(]?\s*|Elect\s+)(.+?)\)?$", raw)
     if elective_match:
         is_elective = True
         raw = elective_match.group(1).strip()
@@ -298,15 +326,21 @@ def add_vacation(
 
 # ---------- Cell parsing ----------
 
-# Skip-list — these are home-program rotations or non-rotations
+# Skip-list — these are home-program rotations or non-rotations.
+# Compared case-insensitively against the cell text.
 HOME_PROGRAM_NAMES = {
-    "PLASTICS",
-    "UROLOGY",
-    "Anes",
-    "PROCEDURE",
-    "Simulation",
-    "RESEARCH",
+    "plastics",
+    "urology",
+    "anes",
+    "procedure",
+    "simulation",
+    "research",
+    "out",
 }
+
+
+def _is_home_program(text: str) -> bool:
+    return text.strip().lower() in HOME_PROGRAM_NAMES
 
 
 def parse_cell(
@@ -324,7 +358,7 @@ def parse_cell(
         return
     if cell.upper() == "TBD":
         return
-    if cell in HOME_PROGRAM_NAMES:
+    if _is_home_program(cell):
         return
     if "TBD" in cell.upper() and "/" not in cell:
         return  # e.g., "Elective - TBD"
@@ -336,21 +370,21 @@ def parse_cell(
         # Header-only lines (like "Elective") still apply their flag.
         has_dated = any(re.search(r"\d+/\d+\s*-\s*\d+/\d+", line) for line in lines)
         if has_dated:
-            elective_header = any(
-                line.lower().strip() == "elective" for line in lines
-            )
+            elective_header = any(line.lower().strip() == "elective" for line in lines)
             for line in lines:
                 if not re.search(r"\d+/\d+\s*-\s*\d+/\d+", line):
                     continue  # skip header-only lines like "Elective"
                 _parse_segment_with_flag(
-                    line, block_start, block_end, resident_idx, pgy,
+                    line,
+                    block_start,
+                    block_end,
+                    resident_idx,
+                    pgy,
                     force_elective=elective_header,
                 )
         else:
             for line in lines:
-                _parse_dated_segment(
-                    line, block_start, block_end, resident_idx, pgy
-                )
+                _parse_dated_segment(line, block_start, block_end, resident_idx, pgy)
         return
 
     # Inline date range: "Rotation X/Y-X/Y"
@@ -383,16 +417,20 @@ def parse_cell(
             if other and other.upper() != "FLOAT":
                 # Determine remaining date range
                 if float_start > block_start:
-                    add_rotation(
-                        resident_idx,
-                        *_resolve(other),
-                        start=block_start,
-                        end=float_start - timedelta(days=1),
-                    ) if False else _add_other(
-                        other,
-                        block_start,
-                        float_start - timedelta(days=1),
-                        resident_idx,
+                    (
+                        add_rotation(
+                            resident_idx,
+                            *_resolve(other),
+                            start=block_start,
+                            end=float_start - timedelta(days=1),
+                        )
+                        if False
+                        else _add_other(
+                            other,
+                            block_start,
+                            float_start - timedelta(days=1),
+                            resident_idx,
+                        )
                     )
                 if float_end < block_end:
                     _add_other(
@@ -411,14 +449,30 @@ def parse_cell(
             add_rotation(resident_idx, rot, block_start, block_end, loc, elec)
             return
 
-        parts = [p.strip() for p in cell.split("/")]
+        # If the whole cell starts with "Elective" before any split, strip
+        # the marker and apply elective to both halves (e.g., "Elective Ob/Gyn"
+        # or "Elective - Ob/Gyn").
+        whole_cell_elective = False
+        cell_for_split = cell
+        m = re.match(r"(?i)^Elective\s*[-:]?\s*(.+/.+)$", cell_for_split)
+        if m:
+            whole_cell_elective = True
+            cell_for_split = m.group(1).strip()
+
+        parts = [p.strip() for p in cell_for_split.split("/")]
         if len(parts) == 2:
             f_start, f_end, s_start, s_end = split_block_monday(block_start, block_end)
             for part, start, end in [
                 (parts[0], f_start, f_end),
                 (parts[1], s_start, s_end),
             ]:
-                _add_other(part, start, end, resident_idx)
+                _add_other(
+                    part,
+                    start,
+                    end,
+                    resident_idx,
+                    force_elective=whole_cell_elective,
+                )
             return
 
     # Default: single rotation for the whole block
@@ -429,21 +483,31 @@ def _resolve(raw: str) -> tuple[str, str | None, bool]:
     return map_rotation(raw)
 
 
-def _add_other(raw: str, start: date, end: date, resident_idx: int, force_elective: bool = False):
+_unknown_rotations: set[str] = set()
+
+
+def _add_other(
+    raw: str, start: date, end: date, resident_idx: int, force_elective: bool = False
+):
     """Add a single rotation or vacation entry."""
     raw = raw.strip()
     if not raw or raw.upper() == "TBD":
         return
-    if raw in HOME_PROGRAM_NAMES:
+    if _is_home_program(raw):
         return
     if "TBD" in raw.upper():
         return
 
     rot, loc, elec = map_rotation(raw)
+    is_elective = elec or force_elective
     if rot == "VACATION":
         add_vacation(resident_idx, start, end)
-    else:
-        add_rotation(resident_idx, rot, start, end, loc, elec or force_elective)
+        return
+    # Validate non-elective rotations against the canonical list. Electives
+    # are allowed to use any sub-type per rule 10.
+    if not is_elective and rot not in VALID_ROTATIONS:
+        _unknown_rotations.add(rot)
+    add_rotation(resident_idx, rot, start, end, loc, is_elective)
 
 
 def _parse_dated_segment(
@@ -466,7 +530,9 @@ def _parse_segment_with_flag(
         return
     match = re.match(r"^(.+?)\s+(\d+/\d+)\s*-\s*(\d+/\d+)\s*$", line)
     if not match:
-        _add_other(line, block_start, block_end, resident_idx, force_elective=force_elective)
+        _add_other(
+            line, block_start, block_end, resident_idx, force_elective=force_elective
+        )
         return
     rot_text = match.group(1).strip()
     start_str = match.group(2)
@@ -481,7 +547,9 @@ def _parse_segment_with_flag(
         seg_start = block_start
     if seg_start > seg_end:
         return  # Skip malformed segment
-    _add_other(rot_text, seg_start, seg_end, resident_idx, force_elective=force_elective)
+    _add_other(
+        rot_text, seg_start, seg_end, resident_idx, force_elective=force_elective
+    )
 
 
 # ---------- Section parsers ----------
@@ -568,7 +636,9 @@ def parse_blocked_section(
         clean_name = name
         if name.lower().startswith("prelim"):
             is_prelim = True
-            clean_name = re.sub(r"^prelim\s*[-:]?\s*", "", name, flags=re.IGNORECASE).strip()
+            clean_name = re.sub(
+                r"^prelim\s*[-:]?\s*", "", name, flags=re.IGNORECASE
+            ).strip()
 
         # Skip rows where the "name" is just a generic specialty
         is_generic = clean_name.lower() in (
@@ -640,34 +710,76 @@ def parse_main_schedule():
     rows = df.values.tolist()
 
     # ---- PGY-5 ----
-    pgy5_dates = [parse_block_header(h, 2026) for h in [
-        "7/1-8/30", "8/31-11/1", "11/2-12/27", "12/28-2/28", "3/1-5/2", "5/3-6/30",
-    ]]
+    pgy5_dates = [
+        parse_block_header(h, 2026)
+        for h in [
+            "7/1-8/30",
+            "8/31-11/1",
+            "11/2-12/27",
+            "12/28-2/28",
+            "3/1-5/2",
+            "5/3-6/30",
+        ]
+    ]
     parse_section_by_anchor(rows, "Shruthi Srinivas", 6, pgy5_dates)
 
     # ---- PGY-4 ----
-    pgy4_dates = [parse_block_header(h, 2026) for h in [
-        "7/1-8/16", "8/17-10/4", "10/5-11/15", "11/16-1/3",
-        "1/4-2/14", "2/15-4/4", "4/5-5/16", "5/17-6/30",
-    ]]
+    pgy4_dates = [
+        parse_block_header(h, 2026)
+        for h in [
+            "7/1-8/16",
+            "8/17-10/4",
+            "10/5-11/15",
+            "11/16-1/3",
+            "1/4-2/14",
+            "2/15-4/4",
+            "4/5-5/16",
+            "5/17-6/30",
+        ]
+    ]
     parse_section_by_anchor(rows, "Dan Bacon", 8, pgy4_dates)
 
     # ---- PGY-3 Gen Surg ----
-    pgy3_gs_dates = [parse_block_header(h, 2026) for h in [
-        "7/1-8/23", "8/24-10/18", "10/19-12/6", "12/7-1/31",
-        "2/1-3/21", "3/22-5/9", "5/10-6/30",
-    ]]
+    pgy3_gs_dates = [
+        parse_block_header(h, 2026)
+        for h in [
+            "7/1-8/23",
+            "8/24-10/18",
+            "10/19-12/6",
+            "12/7-1/31",
+            "2/1-3/21",
+            "3/22-5/9",
+            "5/10-6/30",
+        ]
+    ]
     parse_section_by_anchor(rows, "Michelle Chan", 7, pgy3_gs_dates)
 
     # ---- 13-block visiting/Doctors PGY-4/3 (Cristina Rizzo and 8 more) ----
-    blocks_13_dates = [parse_block_header(h, 2026) for h in [
-        "7/1-7/26", "7/27-8/23", "8/24-9/20", "9/21-10/18", "10/19-11/15",
-        "11/16-12/13", "12/14-1/10", "1/11-2/7", "2/8-3/7", "3/8-4/4",
-        "4/5-5/2", "5/3-5/30", "5/31-6/30",
-    ]]
+    blocks_13_dates = [
+        parse_block_header(h, 2026)
+        for h in [
+            "7/1-7/26",
+            "7/27-8/23",
+            "8/24-9/20",
+            "9/21-10/18",
+            "10/19-11/15",
+            "11/16-12/13",
+            "12/14-1/10",
+            "1/11-2/7",
+            "2/8-3/7",
+            "3/8-4/4",
+            "4/5-5/2",
+            "5/3-5/30",
+            "5/31-6/30",
+        ]
+    ]
     parse_section_by_anchor(
-        rows, "Cristina Rizzo", 9, blocks_13_dates,
-        is_visiting=True, visiting_institution="Doctors Hospital",
+        rows,
+        "Cristina Rizzo",
+        9,
+        blocks_13_dates,
+        is_visiting=True,
+        visiting_institution="Doctors Hospital",
     )
 
     # ---- PGY-3 misc (Shannon McDonnell, Neelesh Baragoda) ----
@@ -690,9 +802,22 @@ def parse_main_schedule():
 
     # ---- Monthly date schema ----
     monthly_dates = []
-    months = [(7, 2026), (8, 2026), (9, 2026), (10, 2026), (11, 2026), (12, 2026),
-              (1, 2027), (2, 2027), (3, 2027), (4, 2027), (5, 2027), (6, 2027)]
+    months = [
+        (7, 2026),
+        (8, 2026),
+        (9, 2026),
+        (10, 2026),
+        (11, 2026),
+        (12, 2026),
+        (1, 2027),
+        (2, 2027),
+        (3, 2027),
+        (4, 2027),
+        (5, 2027),
+        (6, 2027),
+    ]
     import calendar
+
     for m, y in months:
         first = date(y, m, 1)
         last_day = calendar.monthrange(y, m)[1]
@@ -713,8 +838,12 @@ def parse_main_schedule():
 
     # ---- Doctors PGY-1 ----
     parse_section_by_anchor(
-        rows, "Jacob Spencer", 4, blocks_13_dates,
-        is_visiting=True, visiting_institution="Doctors Hospital",
+        rows,
+        "Jacob Spencer",
+        4,
+        blocks_13_dates,
+        is_visiting=True,
+        visiting_institution="Doctors Hospital",
     )
 
     # ---- Plastic Surgery (James Yoon PGY-4 + 5 PGY-1) ----
@@ -823,7 +952,8 @@ def find_resident_idx(name_query: str) -> int | None:
     # Try first-name disambiguation among similar last-name matches
     if first:
         first_matches = [
-            r for r in matches
+            r
+            for r in matches
             if r["name"].split()[0].lower().startswith(first.lower()[:3])
         ]
         if len(first_matches) == 1:
@@ -840,10 +970,30 @@ def _parse_week_dates(label: str) -> tuple[date, date] | None:
 
     # Patterns: "July 1-5", "July 27-Aug 2", "Aug 31 - Sept 6"
     months = {
-        "January": 1, "Jan": 1, "February": 2, "Feb": 2, "March": 3, "Mar": 3,
-        "April": 4, "Apr": 4, "May": 5, "June": 6, "Jun": 6, "July": 7, "Jul": 7,
-        "August": 8, "Aug": 8, "September": 9, "Sept": 9, "Sep": 9,
-        "October": 10, "Oct": 10, "November": 11, "Nov": 11, "December": 12, "Dec": 12,
+        "January": 1,
+        "Jan": 1,
+        "February": 2,
+        "Feb": 2,
+        "March": 3,
+        "Mar": 3,
+        "April": 4,
+        "Apr": 4,
+        "May": 5,
+        "June": 6,
+        "Jun": 6,
+        "July": 7,
+        "Jul": 7,
+        "August": 8,
+        "Aug": 8,
+        "September": 9,
+        "Sept": 9,
+        "Sep": 9,
+        "October": 10,
+        "Oct": 10,
+        "November": 11,
+        "Nov": 11,
+        "December": 12,
+        "Dec": 12,
     }
 
     # Try "Month D-D"
@@ -858,9 +1008,7 @@ def _parse_week_dates(label: str) -> tuple[date, date] | None:
             return date(year, mnum, d1), date(year, mnum, d2)
 
     # Try "Month D - Month D" (cross-month)
-    m = re.match(
-        r"^([A-Za-z]+)\s*(\d+)\s*-\s*([A-Za-z]+)\s*(\d+)\s*$", label
-    )
+    m = re.match(r"^([A-Za-z]+)\s*(\d+)\s*-\s*([A-Za-z]+)\s*(\d+)\s*$", label)
     if m:
         m1 = months.get(m.group(1))
         m2 = months.get(m.group(3))
@@ -995,8 +1143,16 @@ def parse_vacation_file():
         if in_other and len(row) > 3:
             name = first_cell
             dates_raw = str(row[3]).strip() if not pd.isna(row[3]) else ""
-            reason = str(row[4]).strip().lower() if len(row) > 4 and not pd.isna(row[4]) else ""
-            vac_type = "conference" if "training" in reason or "conference" in reason else "vacation"
+            reason = (
+                str(row[4]).strip().lower()
+                if len(row) > 4 and not pd.isna(row[4])
+                else ""
+            )
+            vac_type = (
+                "conference"
+                if "training" in reason or "conference" in reason
+                else "vacation"
+            )
 
             idx = find_resident_idx(name)
             if idx is None:
@@ -1036,7 +1192,9 @@ def parse_vacation_file():
                 else ""
             )
             vac_type = (
-                "conference" if "training" in reason or "conference" in reason else "vacation"
+                "conference"
+                if "training" in reason or "conference" in reason
+                else "vacation"
             )
 
             idx = find_resident_idx(name)
@@ -1070,10 +1228,30 @@ def _parse_explicit_dates(raw: str) -> list[tuple[date, date]]:
         raw = raw.split(" OR ")[0].strip()
 
     months = {
-        "January": 1, "Jan": 1, "February": 2, "Feb": 2, "March": 3, "Mar": 3,
-        "April": 4, "Apr": 4, "May": 5, "June": 6, "Jun": 6, "July": 7, "Jul": 7,
-        "August": 8, "Aug": 8, "September": 9, "Sept": 9, "Sep": 9,
-        "October": 10, "Oct": 10, "November": 11, "Nov": 11, "December": 12, "Dec": 12,
+        "January": 1,
+        "Jan": 1,
+        "February": 2,
+        "Feb": 2,
+        "March": 3,
+        "Mar": 3,
+        "April": 4,
+        "Apr": 4,
+        "May": 5,
+        "June": 6,
+        "Jun": 6,
+        "July": 7,
+        "Jul": 7,
+        "August": 8,
+        "Aug": 8,
+        "September": 9,
+        "Sept": 9,
+        "Sep": 9,
+        "October": 10,
+        "Oct": 10,
+        "November": 11,
+        "Nov": 11,
+        "December": 12,
+        "Dec": 12,
     }
 
     # "Month D-D, YYYY" or "Month D-D"
@@ -1099,7 +1277,9 @@ def _parse_explicit_dates(raw: str) -> list[tuple[date, date]]:
             ]
 
     # "M/D-M/D/YY" or "M/D-M/D" or "M/D/M/D"
-    m = re.match(r"^(\d{1,2})/(\d{1,2})\s*[-/]\s*(\d{1,2})/(\d{1,2})(?:/\d{2,4})?$", raw)
+    m = re.match(
+        r"^(\d{1,2})/(\d{1,2})\s*[-/]\s*(\d{1,2})/(\d{1,2})(?:/\d{2,4})?$", raw
+    )
     if m:
         m1, d1, m2, d2 = (int(x) for x in m.groups())
         y1 = 2026 if m1 >= 7 else 2027
@@ -1109,8 +1289,12 @@ def _parse_explicit_dates(raw: str) -> list[tuple[date, date]]:
     # "M/D/YY"
     m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{2,4})$", raw)
     if m:
-        return [(date(int(m.group(3)), int(m.group(1)), int(m.group(2))),
-                 date(int(m.group(3)), int(m.group(1)), int(m.group(2))))]
+        return [
+            (
+                date(int(m.group(3)), int(m.group(1)), int(m.group(2))),
+                date(int(m.group(3)), int(m.group(1)), int(m.group(2))),
+            )
+        ]
 
     return []
 
@@ -1171,6 +1355,14 @@ def main():
         print(f"\nUnmatched anesthesia vacation entries ({len(anes_unmatched)}):")
         for dates_raw, name in anes_unmatched:
             print(f"  - {dates_raw}: {name}")
+
+    if _unknown_rotations:
+        print(
+            f"\nNon-elective rotations not in VALID_ROTATIONS "
+            f"({len(_unknown_rotations)}):"
+        )
+        for r in sorted(_unknown_rotations):
+            print(f"  - {r!r}")
 
     data = {
         "residents": residents,
