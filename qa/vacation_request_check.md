@@ -1,0 +1,251 @@
+# Vacation Request Validity Check
+
+Run against `resident_schedule.db` on 2026-05-24.
+Requests are **not** written to the database — rules only.
+
+**110 requests** — 45 fail one or more rules, 0 exempt, 0 could not be evaluated.
+
+## Pending (101)
+
+- 🟢 PASS **Courtney Collins** 2026-08-10 → 2026-08-16
+- 🔴 FAIL **Courtney Collins** 2027-05-31 → 2027-06-06
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Same-Service Repeat: Two vacations from Colorectal Surgery must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only 18 days away
+- 🟢 PASS **Pat Quinn** 2026-08-03 → 2026-08-09
+- 🟢 PASS **Pat Quinn** 2026-09-14 → 2026-09-20
+- 🟢 PASS **Pat Quinn** 2027-04-05 → 2027-04-11
+- 🟢 PASS **Marissa Guo** 2026-09-28 → 2026-10-04
+- 🔴 FAIL **Marissa Guo** 2027-01-10 → 2027-01-17
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 8 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Sunday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🟢 PASS **Jordy Stafford** 2026-09-07 → 2026-09-13
+- 🟢 PASS **Jordy Stafford** 2027-03-01 → 2027-03-07
+- 🟢 PASS **Taylor Head** 2026-08-31 → 2026-09-06
+- 🟢 PASS **Taylor Head** 2027-02-08 → 2027-02-14
+- 🟢 PASS **Taylor Head** 2027-04-05 → 2027-04-11
+- 🔴 FAIL **Shruthi Srinivas** 2027-05-24 → 2027-05-30
+    - ❌ Same-Service Repeat: Two vacations from Surgical Oncology must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only 25 days away
+- 🟢 PASS **Shruthi Srinivas** 2026-08-10 → 2026-08-16
+- 🟢 PASS **Shruthi Srinivas** 2027-03-15 → 2027-03-21
+- 🟢 PASS **Katie Bergus** 2026-11-30 → 2026-12-06
+- 🟢 PASS **Katie Bergus** 2027-04-26 → 2027-05-02
+- 🟢 PASS **Katie Bergus** 2027-02-22 → 2027-02-28
+- 🟢 PASS **Ali Whalen** 2026-08-24 → 2026-08-30
+- 🟢 PASS **Ali Whalen** 2027-03-08 → 2027-03-14
+- 🟢 PASS **Ali Whalen** 2026-10-26 → 2026-11-01
+- 🟢 PASS **Dan Bacon** 2026-08-10 → 2026-08-16
+- 🟢 PASS **Dan Bacon** 2027-02-08 → 2027-02-14
+- 🟢 PASS **Dan Bacon** 2027-05-10 → 2027-05-16
+- 🟢 PASS **Dan Chopyk** 2026-11-09 → 2026-11-15
+- 🟢 PASS **Dan Chopyk** 2027-05-17 → 2027-05-23
+- 🟢 PASS **Dan Chopyk** 2027-02-15 → 2027-02-21
+- 🟢 PASS **Dan Gage** 2026-10-12 → 2026-10-18
+- 🟢 PASS **Dan Gage** 2027-03-29 → 2027-04-04
+- 🟢 PASS **Dan Gage** 2027-01-25 → 2027-01-31
+- 🟢 PASS **Diamantis Tsillimigras** 2026-08-17 → 2026-08-23 _(matched fuzzy~diamantistsilimigras)_
+- 🟢 PASS **Diamantis Tsillimigras** 2026-11-16 → 2026-11-22 _(matched fuzzy~diamantistsilimigras)_
+- 🟢 PASS **Diamantis Tsillimigras** 2027-05-10 → 2027-05-16 _(matched fuzzy~diamantistsilimigras)_
+- 🟢 PASS **Shachi Srivatsa** 2026-08-17 → 2026-08-23
+- 🟢 PASS **Shachi Srivatsa** 2026-08-31 → 2026-09-06
+- 🟢 PASS **Shachi Srivatsa** 2026-11-16 → 2026-11-22
+- 🟢 PASS **Shachi Srivatsa** 2027-05-24 → 2027-05-30
+- 🟢 PASS **Stefanie Rhode** 2026-09-07 → 2026-09-13
+- 🟢 PASS **Stefanie Rhode** 2027-04-05 → 2027-04-11
+- 🟢 PASS **Stefanie Rhode** 2027-04-19 → 2027-04-25
+- 🟢 PASS **Dottie Stearns** 2026-10-19 → 2026-10-25 _(matched fuzzy~dottiesterns)_
+- 🔴 FAIL **Dottie Stearns** 2027-01-10 → 2027-01-17 _(matched fuzzy~dottiesterns)_
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 8 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Sunday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ No-Vacation Rotation: Vacation is not permitted during these rotations.
+        - On Night Float during requested dates
+- 🔴 FAIL **Dottie Stearns** 2027-05-24 → 2027-05-30 _(matched fuzzy~dottiesterns)_
+    - ❌ No-Vacation Rotation: Vacation is not permitted during these rotations.
+        - On Night Float during requested dates
+- 🟢 PASS **Chidinma Akpunonu** 2026-12-07 → 2026-12-13
+- 🟢 PASS **Chidinma Akpunonu** 2027-02-08 → 2027-02-14
+- 🟢 PASS **Chidinma Akpunonu** 2027-04-05 → 2027-04-11
+- 🟢 PASS **Ian Garbarine** 2026-11-09 → 2026-11-15
+- 🟢 PASS **Ian Garbarine** 2027-03-01 → 2027-03-07
+- 🟢 PASS **Ian Garbarine** 2027-05-03 → 2027-05-09
+- 🟢 PASS **Ian Garbarine** 2027-05-10 → 2027-05-16
+- 🟢 PASS **Michelle Chan** 2026-09-14 → 2026-09-20
+- 🟢 PASS **Michelle Chan** 2027-03-22 → 2027-03-28
+- 🟢 PASS **Michelle Chan** 2027-05-10 → 2027-05-16
+- 🟢 PASS **Paulos Mengsteab** 2026-08-24 → 2026-08-30
+- 🟢 PASS **Paulos Mengsteab** 2027-02-01 → 2027-02-07
+- 🟢 PASS **Paulos Mengsteab** 2027-05-10 → 2027-05-16
+- 🟢 PASS **Alex Powell** 2026-09-14 → 2026-09-20
+- 🟢 PASS **Alex Powell** 2027-03-15 → 2027-03-21
+- 🟢 PASS **Alex Powell** 2027-03-22 → 2027-03-28
+- 🟢 PASS **Alex Sougiannis** 2026-08-31 → 2026-09-06
+- 🟢 PASS **Alex Sougiannis** 2026-11-30 → 2026-12-06
+- 🔴 FAIL **Alex Sougiannis** 2027-01-04 → 2027-01-10
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: December 20 - January 5
+- 🟢 PASS **Alex Sougiannis** 2027-03-22 → 2027-03-28
+- 🟢 PASS **Waeya Lin** 2026-08-10 → 2026-08-16
+- 🟢 PASS **Kirsten Gateless** 2026-11-16 → 2026-11-22
+- 🔴 FAIL **Casey Carr** 2026-08-15 → 2026-08-23
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+- 🔴 FAIL **Casey Carr** 2026-07-18 → 2026-07-19
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 2 days.
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: July 1 - July 30
+- 🔴 FAIL **Grace Volk** 2026-08-08 → 2026-08-09
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 2 days.
+- 🔴 FAIL **Jasmine Jones** 2026-09-25 → 2026-09-27
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 3 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Friday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Annual Allowance (20 weekdays): Would use 21 of 20 weekdays (20 already used + 1 requested).
+        - Vacation: Oct 19–Nov 15, 2026 (20 weekdays)
+- 🔴 FAIL **Raman Sing** 2026-09-16 → 2026-09-21 _(matched fuzzy~ramansingh)_
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 6 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Wednesday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ No-Vacation Rotation: Vacation is not permitted during these rotations.
+        - On Night Float during requested dates
+    - ❌ Annual Allowance (20 weekdays): Would use 24 of 20 weekdays (20 already used + 4 requested).
+        - Vacation: Feb 22–Mar 07, 2027 (10 weekdays)
+        - Vacation: Jun 17–Jun 30, 2027 (10 weekdays)
+- 🔴 FAIL **Aymen Bahhur** 2026-10-09 → 2026-10-11 _(matched fuzzy~ayminbahhur)_
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 3 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Friday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Annual Allowance (20 weekdays): Would use 21 of 20 weekdays (20 already used + 1 requested).
+        - Vacation: Apr 19–May 02, 2027 (10 weekdays)
+        - Vacation: Jun 17–Jun 30, 2027 (10 weekdays)
+- 🟢 PASS **Paul Wiley** 2027-03-01 → 2027-03-07
+- 🟢 PASS **Matthew Fazio** 2027-05-24 → 2027-05-30
+- 🔴 FAIL **Dana Al-Sayyed** 2026-12-07 → 2026-12-09
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 3 days.
+- 🔴 FAIL **Austin Porter** 2026-12-07 → 2026-12-09
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 3 days.
+- 🔴 FAIL **Evan Suppa** 2026-08-06 → 2026-08-09
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 4 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🔴 FAIL **Joyce Lee** 2026-09-04 → 2026-09-08
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Friday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🔴 FAIL **Christine (Tina) Kinstedt** 2026-10-02 → 2026-10-04 _(matched fuzzy~christinekinstedt)_
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 3 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Friday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🟢 PASS **Mindy Baker** 2026-11-23 → 2026-11-29
+- 🔴 FAIL **Dylan Beaver** 2027-02-24 → 2027-02-25
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 2 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Wednesday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🔴 FAIL **David Bjorklund** 2027-05-23 → 2027-05-27
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Sunday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🔴 FAIL **Jorge Flores-Garcia** 2026-12-13 → 2026-12-17 _(matched fuzzy~floresgarcia)_
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Sunday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+- 🔴 FAIL **Surina Patel** 2026-08-10 → 2026-08-14
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Surina Patel** 2027-01-25 → 2027-01-29
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Grant Sajdak** 2026-09-14 → 2026-09-18
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Grant Sajdak** 2027-06-07 → 2027-06-11
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+- 🔴 FAIL **Kartik Patel** 2027-01-11 → 2027-01-15
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Kartik Patel** 2027-05-10 → 2027-05-14
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🟢 PASS **Phillip Taboada** 2026-11-16 → 2026-11-22
+- 🟢 PASS **Phillip Taboada** 2027-03-29 → 2027-04-04
+- 🔴 FAIL **Bailey Stammen** 2026-09-14 → 2026-09-18
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Archis Deshpande** 2026-10-12 → 2026-10-16
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Amalia Larsen** 2027-02-01 → 2027-02-05
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Drew Persson** 2027-01-18 → 2027-01-22
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Andres Cestti** 2027-02-15 → 2027-02-19
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Connor Stevenson** 2027-05-17 → 2027-05-21
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 5 days.
+- 🔴 FAIL **Chad Archdeacon** 2027-01-30 → 2027-02-07
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+- 🔴 FAIL **Katelyn Sette** 2027-03-13 → 2027-03-21
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+- 🔴 FAIL **Katelyn Sette** 2027-04-24 → 2027-05-02
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+- 🔴 FAIL **Audria Wood** 2026-08-01 → 2026-08-09
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+- 🔴 FAIL **Audria Wood** 2027-05-22 → 2027-05-30
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 9 days.
+
+## Approved (5)
+
+- 🔴 FAIL **Courtney Collins** 2027-06-24 → 2027-06-30
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Call Pool Conflict: Another resident's vacation overlaps a shared call pool.
+        - Jordy Stafford (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Marissa Guo (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Pat Quinn (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Shruthi Srinivas (shared pool: UH PGY3 Call Pool, UH Senior Call Pool)
+    - ❌ Same-Service Repeat: Two vacations from Colorectal Surgery must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only -6 days away
+- 🔴 FAIL **Pat Quinn** 2027-06-24 → 2027-06-30
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Call Pool Conflict: Another resident's vacation overlaps a shared call pool.
+        - Courtney Collins (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Jordy Stafford (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Marissa Guo (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Shruthi Srinivas (shared pool: UH PGY3 Call Pool, UH Senior Call Pool)
+    - ❌ Same-Service Repeat: Two vacations from Zollinger Ellison must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only -6 days away
+- 🔴 FAIL **Marissa Guo** 2027-06-17 → 2027-06-30
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 14 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Same-Service Conflict: Another resident on the same service is already on vacation.
+        - Jordy Stafford on Acute Care Surgery is also on vacation
+    - ❌ Call Pool Conflict: Another resident's vacation overlaps a shared call pool.
+        - Courtney Collins (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Jordy Stafford (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Pat Quinn (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Shruthi Srinivas (shared pool: UH PGY3 Call Pool, UH Senior Call Pool)
+    - ❌ Same-Service Repeat: Two vacations from Acute Care Surgery must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-17 - 2027-06-30 is only -13 days away
+- 🔴 FAIL **Jordy Stafford** 2027-06-24 → 2027-06-30
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Same-Service Conflict: Another resident on the same service is already on vacation.
+        - Marissa Guo on Acute Care Surgery is also on vacation
+    - ❌ Call Pool Conflict: Another resident's vacation overlaps a shared call pool.
+        - Courtney Collins (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Marissa Guo (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Pat Quinn (shared pool: Intern Day Call Pool, UH PGY3 Call Pool, UH Senior Call Pool)
+        - Shruthi Srinivas (shared pool: UH PGY3 Call Pool, UH Senior Call Pool)
+    - ❌ Same-Service Repeat: Two vacations from Acute Care Surgery must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only -6 days away
+- 🔴 FAIL **Taylor Head** 2027-06-24 → 2027-06-30
+    - ❌ Start Day (Mon or Sat): Vacation starts on Thursday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: June 1 - June 30
+    - ❌ Same-Service Repeat: Two vacations from East Services must be separated by at least 4 clinical weeks.
+        - Existing vacation 2027-06-24 - 2027-06-30 is only -6 days away
+
+## Denied (4)
+
+- 🟢 PASS **Shruthi Srinivas** 2026-08-03 → 2026-08-09
+- 🔴 FAIL **Chidinma Akpunonu** 2026-12-14 → 2026-12-14
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 1 days.
+- 🔴 FAIL **Chidinma Akpunonu** 2027-02-01 → 2027-02-01
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 1 days.
+- 🔴 FAIL **Erryk Katayama** 2026-12-16 → 2026-12-27
+    - ❌ Block Length (7 days): Vacation must be exactly 7 days, but requested 12 days.
+    - ❌ Start Day (Mon or Sat): Vacation starts on Wednesday. Must start on Monday (Mon-Sun) or Saturday (Sat-Fri).
+    - ❌ Blackout Period: Requested dates overlap with a blackout period.
+        - Blackout: December 20 - January 5

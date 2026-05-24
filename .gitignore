@@ -15,3 +15,6 @@ __pycache__
 # Editor / tooling artifacts
 tags
 *.swp
+
+# Local DB backups
+*.db.bak-*
