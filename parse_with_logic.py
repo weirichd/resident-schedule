@@ -370,18 +370,31 @@ def parse_cell(
         # Header-only lines (like "Elective") still apply their flag.
         has_dated = any(re.search(r"\d+/\d+\s*-\s*\d+/\d+", line) for line in lines)
         if has_dated:
-            elective_header = any(line.lower().strip() == "elective" for line in lines)
+            elective_re = r"(?i)^elective\s*[-:]?\s*$"
+            elective_header = any(re.match(elective_re, line.strip()) for line in lines)
             for line in lines:
-                if not re.search(r"\d+/\d+\s*-\s*\d+/\d+", line):
-                    continue  # skip header-only lines like "Elective"
-                _parse_segment_with_flag(
-                    line,
-                    block_start,
-                    block_end,
-                    resident_idx,
-                    pgy,
-                    force_elective=elective_header,
-                )
+                stripped = line.strip()
+                if re.match(elective_re, stripped):
+                    continue  # pure elective marker — only sets the flag
+                if re.search(r"\d+/\d+\s*-\s*\d+/\d+", line):
+                    _parse_segment_with_flag(
+                        line,
+                        block_start,
+                        block_end,
+                        resident_idx,
+                        pgy,
+                        force_elective=elective_header,
+                    )
+                else:
+                    # Undated rotation line spans the whole block, e.g. the
+                    # "Hepatobiliary" in "Hepatobiliary\nVacation 6/24-6/30".
+                    _add_other(
+                        stripped,
+                        block_start,
+                        block_end,
+                        resident_idx,
+                        force_elective=elective_header,
+                    )
         else:
             for line in lines:
                 _parse_dated_segment(line, block_start, block_end, resident_idx, pgy)
